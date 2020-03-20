@@ -246,6 +246,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             }
             if (allValid(validationResult)) {
               saveData(values);
+              changePage();
             }
             validate(validateData(values));
           }}
