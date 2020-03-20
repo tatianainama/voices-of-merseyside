@@ -50,7 +50,6 @@ const App = () => {
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
       age: '',
-      ageAuthorized: false,
       gender: '',
       genderCustom: '',
       ethnicity: '',

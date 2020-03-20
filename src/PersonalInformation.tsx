@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Button,
   Modal,
@@ -9,11 +9,11 @@ import {
   Label,
   Input,
   FormText,
+  FormFeedback,
 } from 'reactstrap';
 
 export type FormData = {
   age: string,
-  ageAuthorized: boolean,
   gender: string,
   genderCustom: string,
   ethnicity: string,
@@ -46,7 +46,6 @@ const notEmptyCustomResponse = (customValue: string, fixedResponse: string) => {
 
 const validateData = (values: FormData): Validations => ({
   age: notEmpty(values.age),
-  ageAuthorized: true,
   gender: notEmpty(values.gender),
   genderCustom: notEmptyCustomResponse(values.genderCustom, values.gender),
   ethnicity: notEmpty(values.ethnicity),
@@ -58,7 +57,6 @@ const validateData = (values: FormData): Validations => ({
 
 const _initialValidation: Validations = {
   age: false,
-  ageAuthorized: true,
   gender: false,
   genderCustom: false,
   ethnicity: false,
@@ -75,7 +73,6 @@ const allValid = (validationResult: Validations): boolean => {
 export const PersonalInformation: React.FunctionComponent<PersonalInformationProps> = ({ changePage, closeApp, saveData }) => {
   const [ values, setValue ] = useState<FormData>({
     age: '',
-    ageAuthorized: false,
     gender: '',
     genderCustom: '',
     ethnicity: '',
@@ -100,13 +97,6 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     }
   }
 
-  const setAgeAuthorization = (authorized: boolean) => {
-    setValue({
-      ...values,
-      ageAuthorized: authorized
-    })
-  };
-
   const handleSelect = (value: keyof FormData ) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
     const newValues = {
       ...values,
@@ -124,22 +114,17 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
       <p>All fields are required</p>
 
       <Modal isOpen={openModal} onClosed={() => {
-        if (values.ageAuthorized) {
-          setValue({
-            ...values,
-            age: '1'
-          })
-        } else {
-          closeApp();
-          console.log("go away kiddo")
-        }
+        setValue({
+          ...values,
+          age: '1'
+        })
       }}>
         <ModalBody>
           I have permission from my parent(s)/guardian(s) to participate in this study
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => { setAgeAuthorization(false); toggleModal(false)}}>No</Button>
-          <Button color="primary" onClick={() => { setAgeAuthorization(true); toggleModal(false)}}>Yes</Button>
+          <Button onClick={() => { toggleModal(false); closeApp() }}>No</Button>
+          <Button color="primary" onClick={() => { toggleModal(false) }}>Yes</Button>
         </ModalFooter>
       </Modal>
 
@@ -164,6 +149,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             <option value="5">66 - 75</option>
             <option value="6">75+</option>
           </Input>
+          <FormFeedback>Please, select an option</FormFeedback>
         </FormGroup>
 
         <FormGroup>
@@ -174,9 +160,13 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             <option value="female">Female</option>
             <option value="other">Neither, I identify as follows</option>
           </Input>
+          <FormFeedback>Please, select an option</FormFeedback>
           {
             values.gender === 'other' && (
-              <Input type="text" id="gender-custom" className="mt-2" value={values.genderCustom} onChange={handleSelect('genderCustom')} { ...setInputValidation('genderCustom') } required/>
+              <>
+                <Input type="text" id="gender-custom" className="mt-2" value={values.genderCustom} onChange={handleSelect('genderCustom')} { ...setInputValidation('genderCustom') } required/>
+                <FormFeedback>Please, fill up this input</FormFeedback>
+              </>
             )
           }
         </FormGroup>
@@ -215,9 +205,13 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
               <option value="other">None of the above. I identify as follows:</option>
             </optgroup>
           </Input>
+          <FormFeedback>Please, select an option</FormFeedback>
           {
             values.ethnicity === 'other' && (
-              <Input type="text" id="ethnicity-custom" className="mt-2" required value={values.ethnicityCustom} onChange={handleSelect('ethnicityCustom')} { ...setInputValidation('ethnicityCustom') }/>
+              <>
+                <Input type="text" id="ethnicity-custom" className="mt-2" required value={values.ethnicityCustom} onChange={handleSelect('ethnicityCustom')} { ...setInputValidation('ethnicityCustom') }/>
+                <FormFeedback>Please, fill up this input</FormFeedback>
+              </>
             )
           }
         </FormGroup>
@@ -225,11 +219,13 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
         <FormGroup>
           <Label for="place-birth">Place of birth (Town/City and Country)</Label>
           <Input id="place-birth" type="text" required value={values.birthPlace} onChange={handleSelect('birthPlace')} { ...setInputValidation('birthPlace') }/>
+          <FormFeedback>Please, fill up this input</FormFeedback>
         </FormGroup>
 
         <FormGroup>
           <Label for="post-code">Current place of residence (postcode)</Label>
           <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') }/>
+          <FormFeedback>Please, fill up this input</FormFeedback>
         </FormGroup>
 
         <FormGroup>
