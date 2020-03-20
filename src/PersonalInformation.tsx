@@ -11,7 +11,7 @@ import {
   FormText,
 } from 'reactstrap';
 
-export type PersonalInformationValues = {
+export type FormData = {
   age: string,
   ageAuthorized: boolean,
   gender: string,
@@ -23,14 +23,53 @@ export type PersonalInformationValues = {
   nonNative: string
 };
 
+type FormDataKey = keyof FormData;
+
 type PersonalInformationProps = {
   changePage: () => void,
   closeApp: () => void,
-  saveData: (data: PersonalInformationValues) => void
+  saveData: (data: FormData) => void
 };
 
+type Validations = {
+  [field in FormDataKey]: boolean;
+};
+
+const notEmpty = (value: string) => value !== '';
+
+const notEmptyIfValid = (value: string, conditional: string) => {
+  if (conditional === 'other') {
+    return notEmpty(value)
+  }
+  return true;
+};
+
+const validateData = (values: FormData): Validations => ({
+  age: notEmpty(values.age),
+  ageAuthorized: true,
+  gender: notEmpty(values.gender),
+  genderCustom: notEmptyIfValid(values.genderCustom, values.gender),
+  ethnicity: notEmpty(values.ethnicity),
+  ethnicityCustom: notEmptyIfValid(values.ethnicityCustom, values.ethnicity),
+  birthPlace: notEmpty(values.birthPlace),
+  currentPlace: notEmpty(values.currentPlace),
+  nonNative: true
+});
+
+const _initialValidation = {
+  age: false,
+  ageAuthorized: false,
+  gender: false,
+  genderCustom: false,
+  ethnicity: false,
+  ethnicityCustom: false,
+  birthPlace: false,
+  currentPlace: false,
+  nonNative: false
+}
+
 export const PersonalInformation: React.FunctionComponent<PersonalInformationProps> = ({ changePage, closeApp, saveData }) => {
-  const [ values, setValue ] = useState<PersonalInformationValues>({
+  const [ values, setValue ] = useState<FormData>({
     age: '',
     ageAuthorized: false,
     gender: '',
@@ -42,7 +81,26 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     nonNative: '',
   });
 
+  const [ submitted, submit ] = useState(false);
   const [ openModal, toggleModal ] = useState(false);
+  const [ validationResult, validate ] = useState<Validations>({..._initialValidation});
+
+  const revalidate = () => {
+    if (submitted) {
+      validate(validateData(values))
+    }
+  };
+
+  const setInputValidation = (field: FormDataKey): undefined | { valid: true } | { invalid: true } => {
+    if (!submitted) {
+      return undefined;
+    }
+    if (validationResult[field]) {
+      return { valid: true }
+    } else {
+      return { invalid: true }
+    }
+  }
 
   const setAgeAuthorization = (authorized: boolean) => {
     setValue({
@@ -51,11 +109,14 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     })
   };
 
-  const handleSelect = (value: keyof PersonalInformationValues ) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
+  const handleSelect = (value: keyof FormData ) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
     setValue({
       ...values,
       [value]: e.target.value
     });
+    if (submitted) {
+      revalidate();
+    }
   };
 
   return (
@@ -90,9 +151,12 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             if (e.target.value === '1') {
               toggleModal(true);
             } else {
-              handleSelect('age')(e)
+              handleSelect('age')(e);
             }
-          }} required>
+          }}
+          required
+          { ...setInputValidation('age') }
+          >
             <option value="" disabled>Please chooose</option>
             <option value="1">11 - 17</option>
             <option value="2">18 - 25</option>
@@ -105,7 +169,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
 
         <FormGroup>
           <Label for="gender">Gender</Label>
-          <Input type="select" id="gender" value={values.gender} onChange={handleSelect('gender')} required>
+          <Input type="select" id="gender" value={values.gender} onChange={handleSelect('gender')} required { ...setInputValidation('gender') }>
             <option value="" disabled>Please choose</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -113,7 +177,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           </Input>
           {
             values.gender === 'other' && (
-              <Input type="text" id="gender-custom" className="mt-2" value={values.genderCustom} onChange={handleSelect('genderCustom')} required/>
+              <Input type="text" id="gender-custom" className="mt-2" value={values.genderCustom} onChange={handleSelect('genderCustom')} { ...setInputValidation('genderCustom') } required/>
             )
           }
         </FormGroup>
@@ -125,7 +189,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
               The following options are taken from the 2011 UK Census. You can also define yours selecting the 'None of the above' option.
             </FormText>
           </Label>
-          <Input type="select" id="ethnicity" value={values.ethnicity} onChange={handleSelect('ethnicity')} required>
+          <Input type="select" id="ethnicity" value={values.ethnicity} onChange={handleSelect('ethnicity')} { ...setInputValidation('ethnicity') } required>
             <option value="" disabled>Please choose</option>
             <optgroup label="White">
               <option value="English/Welsh/Scottish/Northern Irish/British">English/Welsh/Scottish/Northern Irish/British</option>
@@ -154,24 +218,24 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           </Input>
           {
             values.ethnicity === 'other' && (
-              <Input type="text" id="ethnicity-custom" className="mt-2" required value={values.ethnicityCustom} onChange={handleSelect('ethnicityCustom')} />
+              <Input type="text" id="ethnicity-custom" className="mt-2" required value={values.ethnicityCustom} onChange={handleSelect('ethnicityCustom')} { ...setInputValidation('ethnicityCustom') }/>
             )
           }
         </FormGroup>
 
         <FormGroup>
           <Label for="place-birth">Place of birth (Town/City and Country)</Label>
-          <Input id="place-birth" type="text" required value={values.birthPlace} onChange={handleSelect('birthPlace')} />
+          <Input id="place-birth" type="text" required value={values.birthPlace} onChange={handleSelect('birthPlace')} { ...setInputValidation('birthPlace') }/>
         </FormGroup>
 
         <FormGroup>
           <Label for="post-code">Current place of residence (postcode)</Label>
-          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} required/>
+          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') }/>
         </FormGroup>
 
         <FormGroup>
           <Label for="non-native">If you were <b>not</b> born in Merseyside:</Label>
-          <Input type="select" id="non-native" value={values.nonNative} onChange={handleSelect('nonNative')}>
+          <Input type="select" id="non-native" value={values.nonNative} onChange={handleSelect('nonNative')} { ...setInputValidation('nonNative') }>
             <option value='' disabled>Please choose</option>
             <option value="1">Less than two years</option>
             <option value="2">3-5 years</option>
@@ -182,8 +246,11 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
 
         <Button
           onClick={() => {
-            console.log(values);
-            saveData(values);
+            if (!submitted) {
+              submit(true);
+            }
+            validate(validateData(values));
+            saveData(values)
           }}
         >Next</Button>
       </Form>

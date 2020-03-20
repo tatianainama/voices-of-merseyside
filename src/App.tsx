@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
-import PersonalInformation, { PersonalInformationValues } from './PersonalInformation';
+import PersonalInformation, { FormData } from './PersonalInformation';
 
 type SectionComponentProps = {
   changePage: () => void
@@ -42,7 +42,7 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
 
 
 type AnswersData = {
-  personalInformation: PersonalInformationValues,
+  personalInformation: FormData,
 };
 
 const App = () => {
@@ -70,7 +70,8 @@ const App = () => {
     PersonalInformation({
       changePage: () => {setCurrentPage(currentPage + 1)},
       closeApp: () => {alert('thank you for your interest, but permission from your parent/guardian is required before you are able to participate.')},
-      saveData: (data: PersonalInformationValues) => {
+      saveData: (data: FormData) => {
+        console.log("data", data)
         saveAnswers({
           ...answers,
           personalInformation: data
@@ -78,7 +79,6 @@ const App = () => {
       }
     }),
   ];
-  console.log("currentPage", currentPage);
   return (
     <div className="App bg-light">
       <div className="container">
