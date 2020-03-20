@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import { 
   Button,
   Modal,
@@ -38,6 +38,7 @@ type Validations = {
 const notEmpty = (value: string) => value !== '';
 
 const notEmptyIfValid = (value: string, conditional: string) => {
+  console.log(value, conditional)
   if (conditional === 'other') {
     return notEmpty(value)
   }
@@ -56,7 +57,7 @@ const validateData = (values: FormData): Validations => ({
   nonNative: true
 });
 
-const _initialValidation = {
+const _initialValidation: Validations = {
   age: false,
   ageAuthorized: false,
   gender: false,
@@ -84,13 +85,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
   const [ submitted, submit ] = useState(false);
   const [ openModal, toggleModal ] = useState(false);
   const [ validationResult, validate ] = useState<Validations>({..._initialValidation});
-
-  const revalidate = () => {
-    if (submitted) {
-      validate(validateData(values))
-    }
-  };
-
+  
   const setInputValidation = (field: FormDataKey): undefined | { valid: true } | { invalid: true } => {
     if (!submitted) {
       return undefined;
@@ -110,12 +105,13 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
   };
 
   const handleSelect = (value: keyof FormData ) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
-    setValue({
+    const newValues = {
       ...values,
       [value]: e.target.value
-    });
+    };
+    setValue(newValues);
     if (submitted) {
-      revalidate();
+      validate(validateData(newValues))
     }
   };
 
