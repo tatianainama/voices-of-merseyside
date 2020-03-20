@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useReducer} from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Button,
   Modal,
@@ -37,10 +37,9 @@ type Validations = {
 
 const notEmpty = (value: string) => value !== '';
 
-const notEmptyIfValid = (value: string, conditional: string) => {
-  console.log(value, conditional)
-  if (conditional === 'other') {
-    return notEmpty(value)
+const notEmptyCustomResponse = (customValue: string, fixedResponse: string) => {
+  if (fixedResponse === 'other') {
+    return notEmpty(customValue)
   }
   return true;
 };
@@ -49,9 +48,9 @@ const validateData = (values: FormData): Validations => ({
   age: notEmpty(values.age),
   ageAuthorized: true,
   gender: notEmpty(values.gender),
-  genderCustom: notEmptyIfValid(values.genderCustom, values.gender),
+  genderCustom: notEmptyCustomResponse(values.genderCustom, values.gender),
   ethnicity: notEmpty(values.ethnicity),
-  ethnicityCustom: notEmptyIfValid(values.ethnicityCustom, values.ethnicity),
+  ethnicityCustom: notEmptyCustomResponse(values.ethnicityCustom, values.ethnicity),
   birthPlace: notEmpty(values.birthPlace),
   currentPlace: notEmpty(values.currentPlace),
   nonNative: true
@@ -59,7 +58,7 @@ const validateData = (values: FormData): Validations => ({
 
 const _initialValidation: Validations = {
   age: false,
-  ageAuthorized: false,
+  ageAuthorized: true,
   gender: false,
   genderCustom: false,
   ethnicity: false,
@@ -68,6 +67,10 @@ const _initialValidation: Validations = {
   currentPlace: false,
   nonNative: false
 }
+
+const allValid = (validationResult: Validations): boolean => {
+  return Object.entries(validationResult).every(([field, result]) => result);
+};
 
 export const PersonalInformation: React.FunctionComponent<PersonalInformationProps> = ({ changePage, closeApp, saveData }) => {
   const [ values, setValue ] = useState<FormData>({
@@ -245,8 +248,10 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             if (!submitted) {
               submit(true);
             }
+            if (allValid(validationResult)) {
+              saveData(values);
+            }
             validate(validateData(values));
-            saveData(values)
           }}
         >Next</Button>
       </Form>
