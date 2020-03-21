@@ -3,6 +3,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
+import DrawCanvas from './DrawCanvas';
 
 type SectionComponentProps = {
   changePage: () => void
@@ -46,7 +47,7 @@ type AnswersData = {
 };
 
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(0);
+  const [ currentPage, setCurrentPage ] = useState(3);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
       age: '',
@@ -77,6 +78,7 @@ const App = () => {
         })
       }
     }),
+    DrawCanvas({})
   ];
   return (
     <div className="App bg-light">

@@ -12,8 +12,10 @@
     "@types/react-dom": "^16.9.5",
     "@types/reactstrap": "^8.4.2",
     "bootstrap": "^4.4.1",
+    "paper": "^0.12.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-paper-bindings": "^2.0.0",
     "react-scripts": "3.4.0",
     "reactstrap": "^8.4.1",
     "typescript": "^3.8.3"
