@@ -1,6 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
-import Paper, { Path, Tool } from 'paper';
+import React, { useState } from 'react';
+import Paper, { Path } from 'paper';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, FormFeedback, Tooltip } from 'reactstrap';
 
 const COLORS = [
   '#FFC6BC',
@@ -35,22 +36,73 @@ type CanvasProps = {
 
 type CanvasState = {
   data: {
-    form: any,
-    path: paper.Path
-  }[],
-  current: number
+    [x: number]: {
+      form: FormData,
+      path: paper.Path
+    }
+  },
+  current: number,
+  openModal: boolean
 };
 
-class Canvas2 extends React.Component<any, CanvasState> {
-  current = 0;
-  Paths: paper.Path[];
+type FormData = {
+  name: string,
+  soundExample: string,
+  associations: string,
+};
 
+const PathQuestions: React.FunctionComponent<{
+  saveData: (data: FormData) => void,
+  cancel: () => void
+}> = ({ saveData, cancel }) => {
+  const [ data, setData ] = useState<FormData>({
+    name: '',
+    soundExample: '',
+    associations: '',
+  });
+
+  const handleChange = (key: string) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
+    setData({
+      ...data,
+      [key]: e.target.value
+    });
+  }
+
+  return (
+    <>
+      <ModalBody>
+        <Form>
+          <FormGroup>
+            <Label for="path-name">Please name the accent spoken in this area</Label>
+            <Input type="text" id="path-name" value={data.name} onChange={handleChange('name')} />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="path-sound-example">Please provide an example of how this accent sounds</Label>
+            <Input type="text" id="path-sound-example" value={data.soundExample} onChange={handleChange('soundExample')} />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="path-associations">Please provide any associations (ideas, judgements, opinions, etc.) that come to mind when you encounter this accent/a speaker with this accent</Label>
+            <Input type="text" id="path-associations" value={data.associations} onChange={handleChange('associations')} />
+          </FormGroup>
+        </Form> 
+      </ModalBody>
+      <ModalFooter>
+        <Button onClick={() => { cancel() }}>Cancel</Button>
+        <Button color="primary" onClick={() => { saveData(data) }}>Save</Button>
+      </ModalFooter>
+    </>
+  )
+};
+
+class Canvas extends React.Component<any, CanvasState> {
   constructor(props: any){
     super(props);
-    this.Paths = [];
     this.state = {
-      data: [],
+      data: {},
       current: 0,
+      openModal: false
     }
   }
 
@@ -66,6 +118,37 @@ class Canvas2 extends React.Component<any, CanvasState> {
     data[current].path.simplify();
   }
 
+  toggleModal = (value: boolean) => {
+    this.setState({
+      openModal: value
+    })
+  }
+
+  saveData = (formData: FormData) => {
+    this.setState(({ data, current }) => {
+      return {
+        openModal: false,
+        current: current < 7 ? current + 1 : current,
+        data: {
+          ...data,
+          [current]: {
+            ...data[current],
+            form: formData
+          }
+        }
+      }
+    })
+  }
+
+  cancel = () => {
+    this.setState(({ data, current }) => {
+      data[current].path.removeSegments();
+      return {
+        openModal: false,
+      }
+    })
+  }
+
   componentDidMount = () => {
     Paper.setup('magic-canvas');
     let Tool = new Paper.Tool();
@@ -73,25 +156,38 @@ class Canvas2 extends React.Component<any, CanvasState> {
     Tool.onMouseDrag = this.addPoint;
     Tool.onMouseUp = (event: any) => {
       this.closePath(event);
-
-      if (this.state.current < 7) {
-        this.setState(({ current }) => ({
-          current: current + 1
-        }))
-      } else {
+      this.toggleModal(true);
+      if (this.state.current === 7) {
         Tool.remove();
       }
     }
     this.setState({
       data: COLORS.map(color => ({
-        form: {},
+        form: {
+          name: '',
+          associations: '',
+          soundExample: ''
+        },
         path: mkPath(color)
       }))
     })
   }
+
   render = () => {
     return (
-      <canvas id="magic-canvas" />
+      <>
+        <canvas id="magic-canvas" />
+        <Modal isOpen={this.state.openModal} onClosed={() => {
+          console.log("close", this.state);
+
+        }}>
+          <PathQuestions
+            saveData={this.saveData}
+            cancel={this.cancel}
+          />
+        </Modal>
+      </>
+
     )
   }
 }
@@ -102,7 +198,7 @@ export const DrawCanvas: React.FunctionComponent = () => {
   return (
     <section id="draw-canvas">
       <h2>Draw time</h2>
-      <Canvas2></Canvas2>
+      <Canvas></Canvas>
     </section>
   )
 };
