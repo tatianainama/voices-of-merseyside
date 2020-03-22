@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, FormFeedback, Tooltip } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
 const COLORS = [
   '#FFC6BC',
