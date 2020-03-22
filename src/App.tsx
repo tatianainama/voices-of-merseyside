@@ -3,7 +3,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
-import DrawCanvas from './DrawCanvas';
+import DrawCanvas, { CanvasData } from './DrawCanvas';
 
 type SectionComponentProps = {
   changePage: () => void
@@ -41,9 +41,9 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
 }
 
 
-
 type AnswersData = {
   personalInformation: FormData,
+  canvas: CanvasData
 };
 
 const App = () => {
@@ -58,7 +58,8 @@ const App = () => {
       birthPlace: '',
       currentPlace: '',
       nonNative: '',
-    }
+    },
+    canvas: {}
   });  
   const sections = [
     Introduction({
@@ -78,7 +79,18 @@ const App = () => {
         })
       }
     }),
-    DrawCanvas({})
+    DrawCanvas({
+      changePage: () => {setCurrentPage(currentPage + 1)},
+      saveData: (data) => {
+        console.log("data", data)
+        saveAnswers({
+          ...answers,
+          canvas: data
+        });
+        setCurrentPage(currentPage + 1)
+      }
+    }),
+
   ];
   return (
     <div className="App bg-light">

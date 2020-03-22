@@ -26,23 +26,31 @@ const mkPath = (color: string) => {
     strokeWidth: 5,
     fillColor: mkBgColor(color)
   }
-  return new Path(style);
+  let path = new Path(style);
+  if (path && path.onClick) {
+    path.onClick((e: any) => {
+      console.log("click on path", e)
+    })
+  }
+  return path;
 }
 
-type CanvasProps = {
-  log: (data: string) => void,
-  maxDrawingsReached: () => void
+export type CanvasData = {
+  [x: number]: {
+    form: FormData,
+    path: paper.Path
+  }
 };
 
 type CanvasState = {
-  data: {
-    [x: number]: {
-      form: FormData,
-      path: paper.Path
-    }
-  },
+  data: CanvasData,
   current: number,
   openModal: boolean
+};
+
+type CanvasProps = {
+  changePage: () => void,
+  saveData: (data: CanvasData) => void
 };
 
 type FormData = {
@@ -96,7 +104,7 @@ const PathQuestions: React.FunctionComponent<{
   )
 };
 
-class Canvas extends React.Component<any, CanvasState> {
+class Canvas extends React.Component<CanvasProps, CanvasState> {
   constructor(props: any){
     super(props);
     this.state = {
@@ -149,6 +157,22 @@ class Canvas extends React.Component<any, CanvasState> {
     })
   }
 
+  clearCanvas = () => {
+    this.setState(({ data }) => {
+      let newData: typeof data = {};
+
+      for (const idx in data ) {
+        data[idx].path.removeSegments();
+        newData[idx] = data[idx];
+      }
+
+      return {
+        current: 0,
+        data: newData
+      }
+    })
+  }
+
   componentDidMount = () => {
     Paper.setup('magic-canvas');
     let Tool = new Paper.Tool();
@@ -176,15 +200,27 @@ class Canvas extends React.Component<any, CanvasState> {
   render = () => {
     return (
       <>
+        <Button onClick={() => this.clearCanvas()}>Clear</Button>
         <canvas id="magic-canvas" />
+        <Button
+          color="primary"
+          onClick={() => this.props.saveData(this.state.data)}
+          disabled={this.state.current === 0}
+        >Next</Button>
         <Modal isOpen={this.state.openModal} onClosed={() => {
           console.log("close", this.state);
-
         }}>
           <PathQuestions
             saveData={this.saveData}
             cancel={this.cancel}
           />
+        </Modal>
+        <Modal isOpen={this.state.current === 7}>
+          <ModalBody>Maximun reached!</ModalBody>
+          <ModalFooter>
+            <Button onClick={() => {}}>Edit drawings</Button>
+            <Button onClick={() => this.props.changePage()}>Next step</Button>
+          </ModalFooter>
         </Modal>
       </>
 
@@ -193,12 +229,17 @@ class Canvas extends React.Component<any, CanvasState> {
 }
 
 
-export const DrawCanvas: React.FunctionComponent = () => {
-  const log = (data: string) => console.log(data);
+export const DrawCanvas: React.FunctionComponent<{
+  changePage: () => void,
+  saveData: (data: CanvasData) => void
+}> = ({ changePage, saveData }) => {
   return (
     <section id="draw-canvas">
       <h2>Draw time</h2>
-      <Canvas></Canvas>
+      <Canvas
+        changePage={changePage}
+        saveData={saveData}
+      />
     </section>
   )
 };
