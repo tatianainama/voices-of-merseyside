@@ -10,6 +10,7 @@ import {
   Input,
   FormText,
   FormFeedback,
+  Fade
 } from 'reactstrap';
 
 export type FormData = {
@@ -108,7 +109,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
   };
 
   return (
-    <section id="personal-information">
+    <Fade tag="section" id="vom-personal-information">
       <h2>Personal Information</h2>
       <p>All fields are required</p>
 
@@ -250,7 +251,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           }}
         >Next</Button>
       </Form>
-    </section>
+    </Fade>
   );
 };
 

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader } from 'reactstrap';
 
 const COLORS = [
   '#FFC6BC',
@@ -199,13 +199,13 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   render = () => {
     return (
       <>
-        <Button onClick={() => this.clearCanvas()}>Clear</Button>
-        <canvas id="magic-canvas" />
+        <Button className="mb-3" onClick={() => this.clearCanvas()}>Clear</Button>
+        <canvas id="magic-canvas" className="mb-4"/>
         <Button
           color="primary"
           onClick={() => this.props.saveData(this.state.data)}
           disabled={this.state.current === 0}
-        >Next</Button>
+        >Finish</Button>
         <Modal isOpen={this.state.openModal} onClosed={() => {
           console.log("close", this.state);
         }}>
@@ -215,7 +215,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           />
         </Modal>
         <Modal isOpen={this.state.current === 7}>
-          <ModalBody>Maximun reached!</ModalBody>
+          <ModalBody>Maximun drawings reached!</ModalBody>
           <ModalFooter>
             <Button onClick={() => {}}>Edit drawings</Button>
             <Button onClick={() => this.props.saveData(this.state.data)}>Next step</Button>
@@ -231,13 +231,29 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 export const DrawCanvas: React.FunctionComponent<{
   saveData: (data: CanvasData) => void
 }> = ({ saveData }) => {
+  const [showInstructions, setShowInstructions] = useState(true)
   return (
-    <section id="draw-canvas">
-      <h2>Draw time</h2>
+    <Fade tag="section" id="vom-drawing-canvas">
+      <Modal isOpen={showInstructions}>
+        <ModalHeader>
+          Instructions
+        </ModalHeader>
+        <ModalBody>
+          <ol>
+            <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside.</li>
+            <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that come to mind when you encounter this accent/a speaker with this accent.</li>
+            <li>You are free to edit your map using the edit function.</li>
+            <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not possible to make changes after your map has been submitted.</li>
+          </ol>
+        </ModalBody>
+        <ModalFooter>
+          <Button outline color="primary" onClick={() => setShowInstructions(false)}>Start</Button>
+        </ModalFooter>
+      </Modal>
       <Canvas
         saveData={saveData}
       />
-    </section>
+    </Fade>
   )
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormGroup, Label, Input, Button } from 'reactstrap';
+import { FormGroup, Label, Input, Button, Fade } from 'reactstrap';
 
 type FollowUpProps = {
   saveData: (data: string) => void
@@ -8,7 +8,7 @@ type FollowUpProps = {
 const FollowUp: React.FunctionComponent<FollowUpProps> = ({ saveData }) => {
   const [ email, setEmail ] = useState('');
   return (
-    <section id="follow-up">
+    <Fade tag="section" id="vom-follow-up">
       <h2>
         Thank you for your participation
       </h2>
@@ -17,7 +17,7 @@ const FollowUp: React.FunctionComponent<FollowUpProps> = ({ saveData }) => {
         <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)}/>
       </FormGroup>
       <Button color="primary" onClick={() => saveData(email)}>Finish</Button>
-    </section>
+    </Fade>
   )
 };
 
