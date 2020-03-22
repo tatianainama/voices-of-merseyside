@@ -60,7 +60,7 @@ type AnswersData = {
 };
 
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(0);
+  const [ currentPage, setCurrentPage ] = useState(3);
   const [ exit, setExit ] = useState(false);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {

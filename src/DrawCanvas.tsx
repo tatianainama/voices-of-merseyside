@@ -35,10 +35,23 @@ const mkPath = (color: string) => {
   return path;
 }
 
+const mkText = (color: string) => {
+  const _text = new Paper.PointText({
+    fillColor: color,
+    strokeColor: '#4b505a',
+    strokeWidth: 1,
+    justification: 'center',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  });
+  return _text;
+}
+
 export type CanvasData = {
   [x: number]: {
     form: FormData,
-    path: paper.Path
+    path: paper.Path,
+    text: paper.PointText
   }
 };
 
@@ -125,6 +138,12 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     data[current].path.simplify();
   }
 
+  addPathName = (pathId: number) => {
+    const { data } = this.state;
+    data[pathId].text.content = data[pathId].form.name;
+    data[pathId].text.position = data[pathId].path.bounds.center;
+  }
+
   toggleModal = (value: boolean) => {
     this.setState({
       openModal: value
@@ -162,6 +181,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 
       for (const idx in data ) {
         data[idx].path.removeSegments();
+        data[idx].text.content = '';
         newData[idx] = data[idx];
       }
 
@@ -191,7 +211,8 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           associations: '',
           soundExample: ''
         },
-        path: mkPath(color)
+        path: mkPath(color),
+        text: mkText(color)
       }))
     })
   }
@@ -208,6 +229,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         >Finish</Button>
         <Modal isOpen={this.state.openModal} onClosed={() => {
           console.log("close", this.state);
+          this.addPathName(this.state.current - 1)
         }}>
           <PathQuestions
             saveData={this.saveData}
