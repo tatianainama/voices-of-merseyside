@@ -26,7 +26,6 @@ export type FormData = {
 type FormDataKey = keyof FormData;
 
 type PersonalInformationProps = {
-  changePage: () => void,
   closeApp: () => void,
   saveData: (data: FormData) => void
 };
@@ -70,7 +69,7 @@ const allValid = (validationResult: Validations): boolean => {
   return Object.entries(validationResult).every(([field, result]) => result);
 };
 
-export const PersonalInformation: React.FunctionComponent<PersonalInformationProps> = ({ changePage, closeApp, saveData }) => {
+export const PersonalInformation: React.FunctionComponent<PersonalInformationProps> = ({ closeApp, saveData }) => {
   const [ values, setValue ] = useState<FormData>({
     age: '',
     gender: '',
@@ -246,7 +245,6 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             }
             if (allValid(validationResult)) {
               saveData(values);
-              changePage();
             }
             validate(validateData(values));
           }}

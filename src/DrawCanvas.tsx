@@ -49,7 +49,6 @@ type CanvasState = {
 };
 
 type CanvasProps = {
-  changePage: () => void,
   saveData: (data: CanvasData) => void
 };
 
@@ -219,7 +218,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           <ModalBody>Maximun reached!</ModalBody>
           <ModalFooter>
             <Button onClick={() => {}}>Edit drawings</Button>
-            <Button onClick={() => this.props.changePage()}>Next step</Button>
+            <Button onClick={() => this.props.saveData(this.state.data)}>Next step</Button>
           </ModalFooter>
         </Modal>
       </>
@@ -230,14 +229,12 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 
 
 export const DrawCanvas: React.FunctionComponent<{
-  changePage: () => void,
   saveData: (data: CanvasData) => void
-}> = ({ changePage, saveData }) => {
+}> = ({ saveData }) => {
   return (
     <section id="draw-canvas">
       <h2>Draw time</h2>
       <Canvas
-        changePage={changePage}
         saveData={saveData}
       />
     </section>

@@ -43,11 +43,13 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
 
 type AnswersData = {
   personalInformation: FormData,
-  canvas: CanvasData
+  canvas: CanvasData,
+  email: '',
 };
 
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(3);
+  const [ currentPage, setCurrentPage ] = useState(0);
+  const [ exit, setExit ] = useState(false);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
       age: '',
@@ -59,7 +61,8 @@ const App = () => {
       currentPlace: '',
       nonNative: '',
     },
-    canvas: {}
+    canvas: {},
+    email: ''
   });  
   const sections = [
     Introduction({
@@ -69,25 +72,24 @@ const App = () => {
       changePage: () => {setCurrentPage(currentPage + 1)}
     }),
     PersonalInformation({
-      changePage: () => {setCurrentPage(currentPage + 1)},
-      closeApp: () => {alert('thank you for your interest, but permission from your parent/guardian is required before you are able to participate.')},
+      closeApp: () => setExit(true),
       saveData: (data: FormData) => {
         console.log("data", data)
         saveAnswers({
           ...answers,
           personalInformation: data
-        })
+        });
+        setCurrentPage(currentPage + 1);
       }
     }),
     DrawCanvas({
-      changePage: () => {setCurrentPage(currentPage + 1)},
       saveData: (data) => {
         console.log("data", data)
         saveAnswers({
           ...answers,
           canvas: data
         });
-        setCurrentPage(currentPage + 1)
+        setCurrentPage(currentPage + 1);
       }
     }),
 
@@ -96,7 +98,16 @@ const App = () => {
     <div className="App bg-light">
       <div className="container">
         {
-          sections[currentPage]
+          !exit && sections[currentPage]
+        }
+        { 
+          exit && (
+            <section>
+              <h4>
+                Thank you for your interest, but permission from your parent/guardian is required before you are able to participate.
+              </h4>
+            </section>
+          )
         }
       </div>
     </div>
