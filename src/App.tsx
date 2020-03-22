@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
+import FollowUp from './FollowUp';
 
 type SectionComponentProps = {
   changePage: () => void
@@ -44,7 +45,7 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
 type AnswersData = {
   personalInformation: FormData,
   canvas: CanvasData,
-  email: '',
+  email: string,
 };
 
 const App = () => {
@@ -92,7 +93,14 @@ const App = () => {
         setCurrentPage(currentPage + 1);
       }
     }),
-
+    FollowUp({
+      saveData: (email) => {
+        saveAnswers({
+          ...answers,
+          email,
+        })
+      }
+    }),
   ];
   return (
     <div className="App bg-light">
