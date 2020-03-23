@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup } from 'reactstrap';
+import { remove } from 'ramda';
 
 const COLORS = [
   '#FFC6BC',
@@ -20,17 +21,15 @@ const mkBgColor = (color: string) => {
   return _color;
 };
 
-const mkPath = (color: string) => {
+const mkPath = (color: string, point?: paper.Point) => {
   let style = {
     strokeColor: color,
     strokeWidth: 5,
     fillColor: mkBgColor(color)
   }
   let path = new Path(style);
-  if (path && path.onClick) {
-    path.onClick((e: any) => {
-      console.log("click on path", e)
-    })
+  if (point) {
+    path.add(point);
   }
   return path;
 }
@@ -48,21 +47,24 @@ const mkText = (color: string) => {
 }
 
 export type CanvasData = {
-  [x: number]: {
-    form: FormData,
-    path: paper.Path,
-    text: paper.PointText
-  }
+  form: FormData,
+  path: paper.Path,
+  text: paper.PointText
 };
 
 type CanvasState = {
-  data: CanvasData,
+  data: CanvasData[],
   current: number,
-  openModal: boolean
+  openModal: boolean,
+  drawTool?: paper.Tool,
+  editTool?: paper.Tool,
+  pathSelected?: number,
+  _path?: CanvasData,
+  editMode: boolean
 };
 
 type CanvasProps = {
-  saveData: (data: CanvasData) => void
+  saveData: (data: CanvasData[]) => void
 };
 
 type FormData = {
@@ -120,28 +122,55 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   constructor(props: any){
     super(props);
     this.state = {
-      data: {},
+      data: [],
       current: 0,
-      openModal: false
+      openModal: false,
+      drawTool: undefined,
+      editTool: undefined,
+      pathSelected: undefined,
+      _path: undefined,
+      editMode: false
     }
   }
 
   addPoint = (event: any) => {
-    const { data, current } = this.state;
-    data[current].path.add(event.point)
+    const { current, _path } = this.state;
+    if (_path) {
+      _path.path.add(event.point)
+    } else {
+      this.setState({
+        _path: {
+          form: {
+            name: '',
+            associations: '',
+            soundExample: '',
+          },
+          path: mkPath(COLORS[current], event.point),
+          text: mkText(COLORS[current])
+        }
+      })
+    }
   }
 
   closePath = (event: any) => {
-    const { data, current } = this.state;
-    data[current].path.add(data[current].path.firstSegment);
-    data[current].path.closed = true;
-    data[current].path.simplify();
+    const { _path } = this.state;
+    if (_path) {
+      _path.path.add(_path.path.firstSegment);
+      _path.path.closed = true;
+      _path.path.simplify();
+    }
   }
 
-  addPathName = (pathId: number) => {
-    const { data } = this.state;
-    data[pathId].text.content = data[pathId].form.name;
-    data[pathId].text.position = data[pathId].path.bounds.center;
+  getPathId = (name: string): string => {
+    return name.slice(-1);
+  }
+
+  addPathLabel = (pathName: string, position: paper.Point) => {
+    const { _path } = this.state;
+    if ( _path) {
+      _path.text.content = pathName;
+      _path.text.position = position;
+    }
   }
 
   toggleModal = (value: boolean) => {
@@ -151,49 +180,51 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   }
 
   saveData = (formData: FormData) => {
-    this.setState(({ data, current }) => {
-      return {
+    const { data, current, _path } = this.state;
+    if (_path) {
+      this.addPathLabel(formData.name, _path.path.bounds.center);
+      this.setState({
         openModal: false,
         current: current < 7 ? current + 1 : current,
-        data: {
+        data: [
           ...data,
-          [current]: {
-            ...data[current],
-            form: formData
+          {
+            ..._path,
+            form: formData,
           }
-        }
-      }
-    })
+        ],
+        _path: undefined
+      })
+    }
   }
 
   cancel = () => {
-    this.setState(({ data, current }) => {
-      data[current].path.removeSegments();
-      return {
-        openModal: false,
-      }
+    const { _path } = this.state;
+    _path?.path.remove();
+    _path?.text.remove();
+
+    this.setState({
+      _path: undefined,
+      openModal: false
     })
+  }
+
+  removeFromCanvas = (data: CanvasData) => {
+    data.path.remove();
+    data.text.remove();
   }
 
   clearCanvas = () => {
     this.setState(({ data }) => {
-      let newData: typeof data = {};
-
-      for (const idx in data ) {
-        data[idx].path.removeSegments();
-        data[idx].text.content = '';
-        newData[idx] = data[idx];
-      }
-
+      data.forEach(this.removeFromCanvas)
       return {
         current: 0,
-        data: newData
+        data: []
       }
     })
   }
 
-  componentDidMount = () => {
-    Paper.setup('magic-canvas');
+  mkDrawTool = () => {
     let Tool = new Paper.Tool();
     Tool.onMouseDown = this.addPoint; 
     Tool.onMouseDrag = this.addPoint;
@@ -204,33 +235,104 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         Tool.remove();
       }
     }
+    Tool.activate();
+    return Tool;
+  }
+
+  getDataByPath = (item: paper.Item) => {
+    return this.state.data.findIndex(data => data.path.id === item.id)
+  }
+
+  mkEditTool = () => {
+    const EditTool = new Paper.Tool();
+    EditTool.onMouseDown = ({ item }: paper.ToolEvent) => {
+      if (item) {
+        if (item.selected) {
+          item.selected = false;
+          this.setState({
+            pathSelected: undefined
+          })
+        } else {
+          item.bringToFront()
+          item.selected = true;
+          this.setState({
+            pathSelected: this.getDataByPath(item)
+          })
+        }
+      }
+    }
+    return EditTool;
+  }
+
+  removePath = () => {
+    const { data, pathSelected } = this.state;
+    if (pathSelected !== undefined) {
+      this.removeFromCanvas(data[pathSelected]);
+      const newData = remove(pathSelected, 1, data);
+      this.setState({
+        pathSelected: undefined,
+        data: newData,
+        current: newData.length, 
+      })
+    }
+  }
+
+  toggleEditMode = (showEdit: boolean) => {
+    const { editTool, drawTool, data, pathSelected } = this.state
+    if (showEdit) {
+      editTool?.activate()
+      this.setState({
+        editMode: showEdit,
+      })
+    } else {
+      drawTool?.activate();
+      if (pathSelected !== undefined) {
+        data[pathSelected].path.selected = false;
+      }
+      this.setState({
+        editMode: showEdit,
+        pathSelected: undefined
+      })
+    }
+  }
+
+  componentDidMount = () => {
+    Paper.setup('magic-canvas');
     this.setState({
-      data: COLORS.map(color => ({
-        form: {
-          name: '',
-          associations: '',
-          soundExample: ''
-        },
-        path: mkPath(color),
-        text: mkText(color)
-      }))
+      drawTool: this.mkDrawTool(),
+      editTool: this.mkEditTool(),
     })
   }
 
   render = () => {
     return (
       <>
-        <Button className="mb-3" onClick={() => this.clearCanvas()}>Clear</Button>
-        <canvas id="magic-canvas" className="mb-4"/>
+        <ButtonGroup className="mb-3">
+          <Button onClick={() => this.clearCanvas()}>Restart</Button>
+          {
+            this.state.editMode ? (
+              <Button onClick={() => this.toggleEditMode(false)}>Draw</Button>
+            ) : (
+              <Button onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>Edit</Button>
+            )
+          }
+        </ButtonGroup>
+        {
+          this.state.pathSelected !== undefined ? (
+            <ButtonGroup className="mb-3">
+              <Button onClick={() => this.removePath()}>Remove</Button>
+              <Button onClick={() => {}}>Edit Data</Button>
+              <Button onClick={() => this.toggleEditMode(false)}>Stop editing</Button>
+            </ButtonGroup>
+          ) : null 
+        }
+        <canvas id="magic-canvas" className={`mb-4 border rounded ${this.state.editMode && 'border-primary'}`}/>
         <Button
           color="primary"
           onClick={() => this.props.saveData(this.state.data)}
           disabled={this.state.current === 0}
         >Finish</Button>
-        <Modal isOpen={this.state.openModal} onClosed={() => {
-          console.log("close", this.state);
-          this.addPathName(this.state.current - 1)
-        }}>
+        <Modal isOpen={this.state.openModal}>
           <PathQuestions
             saveData={this.saveData}
             cancel={this.cancel}
@@ -251,7 +353,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 
 
 export const DrawCanvas: React.FunctionComponent<{
-  saveData: (data: CanvasData) => void
+  saveData: (data: CanvasData[]) => void
 }> = ({ saveData }) => {
   const [showInstructions, setShowInstructions] = useState(true)
   return (

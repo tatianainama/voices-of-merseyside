@@ -47,6 +47,10 @@ h1 {
   background-repeat: no-repeat;
 }
 
+#magic-canvas.border-primary {
+  border-width: 4px!important;
+}
+
 #vom-drawing-canvas button {
   align-self: flex-end;
 }

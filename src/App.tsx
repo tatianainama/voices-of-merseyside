@@ -55,7 +55,7 @@ const FinishSection: React.FunctionComponent = () => {
 
 type AnswersData = {
   personalInformation: FormData,
-  canvas: CanvasData,
+  canvas: CanvasData[],
   email: string,
 };
 
@@ -73,7 +73,7 @@ const App = () => {
       currentPlace: '',
       nonNative: '',
     },
-    canvas: {},
+    canvas: [],
     email: ''
   });  
   const sections = [
@@ -110,7 +110,8 @@ const App = () => {
           ...answers,
           email,
         });
-        setCurrentPage(currentPage + 1)
+        setCurrentPage(currentPage + 1);
+        console.log(answers)
       }
     }),
     FinishSection({})
