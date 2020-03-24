@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faReply, faTrashAlt, faEraser, faSave, faEdit, faPen } from '@fortawesome/free-solid-svg-icons';
 import { remove, update } from 'ramda';
 
 const COLORS = [
@@ -338,26 +340,44 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     const { pathSelected, data } = this.state;
     return (
       <>
-        <ButtonGroup className="mb-3">
-          <Button onClick={() => this.clearCanvas()}>Restart</Button>
+      <div id="vom-canvas-tools">
+        <ButtonGroup className="mb-3 ">
+          <Button onClick={() => this.clearCanvas()} color="danger">
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </Button>
           {
             this.state.editMode ? (
-              <Button onClick={() => this.toggleEditMode(false)}>Draw</Button>
-            ) : (
-              <Button onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>Edit</Button>
-            )
+              <Button onClick={() => this.toggleEditMode(false)} color="warning">
+                <FontAwesomeIcon icon={faReply} />
+              </Button>
+            ) : null
+          }
+          {
+            this.state.data.length && !this.state.editMode ? (
+              <Button color="success" onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>
+                <FontAwesomeIcon icon={faPen} />
+              </Button>
+            ) : null
           }
         </ButtonGroup>
+
         {
           this.state.pathSelected !== undefined ? (
             <ButtonGroup className="mb-3">
-              <Button onClick={() => this.removePath()}>Remove</Button>
-              <Button onClick={() => this.toggleModal(true)}>Edit Data</Button>
-              <Button onClick={() => this.toggleEditMode(false)}>Save changes</Button>
+              <Button onClick={() => this.removePath()}>
+                <FontAwesomeIcon icon={faEraser} />
+              </Button>
+              <Button onClick={() => this.toggleModal(true)}>
+                <FontAwesomeIcon icon={faEdit} />
+              </Button>
+              <Button onClick={() => this.toggleEditMode(false)}>
+                <FontAwesomeIcon icon={faSave} />
+              </Button>
             </ButtonGroup>
           ) : null 
         }
-        <canvas id="magic-canvas" className={`mb-4 border rounded ${this.state.editMode && 'border-primary'}`}/>
+      </div>
+        <canvas id="magic-canvas" className={`mb-4 border rounded ${this.state.editMode && 'border-success'}`}/>
         <Button
           color="primary"
           onClick={() => this.props.saveData(this.state.data)}
