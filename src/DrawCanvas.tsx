@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faReply, faTrashAlt, faEraser, faSave, faEdit, faPen } from '@fortawesome/free-solid-svg-icons';
 import { remove, update } from 'ramda';
@@ -66,7 +66,8 @@ type CanvasState = {
 };
 
 type CanvasProps = {
-  saveData: (data: CanvasData[]) => void
+  saveData: (data: CanvasData[]) => void,
+  showHelp: () => void,
 };
 
 type FormData = {
@@ -275,18 +276,20 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     const EditTool = new Paper.Tool();
     EditTool.onMouseDown = ({ item }: paper.ToolEvent) => {
       if (item) {
-        if (item.selected) {
-          item.selected = false;
-          this.setState({
-            pathSelected: undefined,
-          })
-        } else {
+        if (!item.selected && this.state.pathSelected === undefined) {
           let itemId = this.getDataByPath(item);
           item.bringToFront()
           item.selected = true;
           this.setState({
             pathSelected: itemId,
           })
+        } else {
+          if (item.selected) {
+            item.selected = false;
+            this.setState({
+              pathSelected: undefined,
+            })
+          }
         }
       }
     }
@@ -341,21 +344,24 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     return (
       <>
       <div id="vom-canvas-tools">
-        <ButtonGroup className="mb-3 ">
+        <ButtonGroup className="mb-3" size="sm">
+          <Button onClick={() => this.props.showHelp()} color="info">
+            HELP
+          </Button>
           <Button onClick={() => this.clearCanvas()} color="danger">
-            <FontAwesomeIcon icon={faTrashAlt} />
+            RESET
           </Button>
           {
             this.state.editMode ? (
-              <Button onClick={() => this.toggleEditMode(false)} color="warning">
-                <FontAwesomeIcon icon={faReply} />
+              <Button onClick={() => this.toggleEditMode(false)}>
+                BACK
               </Button>
             ) : null
           }
           {
             this.state.data.length && !this.state.editMode ? (
-              <Button color="success" onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>
-                <FontAwesomeIcon icon={faPen} />
+              <Button onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>
+                EDIT
               </Button>
             ) : null
           }
@@ -363,21 +369,27 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 
         {
           this.state.pathSelected !== undefined ? (
-            <ButtonGroup className="mb-3">
-              <Button onClick={() => this.removePath()}>
-                <FontAwesomeIcon icon={faEraser} />
-              </Button>
+            <ButtonGroup className="mb-3" size="sm">
               <Button onClick={() => this.toggleModal(true)}>
-                <FontAwesomeIcon icon={faEdit} />
+                EDIT DATA
               </Button>
-              <Button onClick={() => this.toggleEditMode(false)}>
-                <FontAwesomeIcon icon={faSave} />
+              <Button onClick={() => this.removePath()}>
+                <FontAwesomeIcon icon={faTrashAlt} />
               </Button>
             </ButtonGroup>
           ) : null 
         }
       </div>
-        <canvas id="magic-canvas" className={`mb-4 border rounded ${this.state.editMode && 'border-success'}`}/>
+      <div id="vom-canvas-mode">
+        {
+          this.state.editMode ? (
+            <Badge color="success">Select a shape to edit</Badge>
+          ) : (
+            <Badge color="primary">Drawing</Badge>
+          )
+        }
+      </div>
+        <canvas id="magic-canvas" className='mb-4 rounded'/>
         <Button
           color="primary"
           onClick={() => this.props.saveData(this.state.data)}
@@ -419,15 +431,16 @@ export const DrawCanvas: React.FunctionComponent<{
             <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside.</li>
             <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that come to mind when you encounter this accent/a speaker with this accent.</li>
             <li>You are free to edit your map using the edit function.</li>
-            <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not possible to make changes after your map has been submitted.</li>
+            <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not be possible to make changes after your map has been submitted.</li>
           </ol>
         </ModalBody>
         <ModalFooter>
-          <Button outline color="primary" onClick={() => setShowInstructions(false)}>Start</Button>
+          <Button outline color="primary" onClick={() => setShowInstructions(false)}>Ok</Button>
         </ModalFooter>
       </Modal>
       <Canvas
         saveData={saveData}
+        showHelp={() => setShowInstructions(true)}
       />
     </Fade>
   )
