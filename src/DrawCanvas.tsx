@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup } from 'reactstrap';
-import { remove } from 'ramda';
+import { remove, update } from 'ramda';
 
 const COLORS = [
   '#FFC6BC',
@@ -74,14 +74,25 @@ type FormData = {
 };
 
 const PathQuestions: React.FunctionComponent<{
-  saveData: (data: FormData) => void,
-  cancel: () => void
-}> = ({ saveData, cancel }) => {
+  saveData: (data: FormData, editing?: boolean) => void,
+  cancel: () => void,
+  initialData?: {
+    name: string,
+    soundExample: string,
+    associations: string,
+  }
+}> = ({ saveData, cancel, initialData }) => {
   const [ data, setData ] = useState<FormData>({
     name: '',
     soundExample: '',
     associations: '',
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setData(initialData);
+    }
+  }, [ initialData ]);
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
     setData({
@@ -112,7 +123,7 @@ const PathQuestions: React.FunctionComponent<{
       </ModalBody>
       <ModalFooter>
         <Button onClick={() => { cancel() }}>Cancel</Button>
-        <Button color="primary" onClick={() => { saveData(data) }}>Save</Button>
+        <Button color="primary" onClick={() => { saveData(data, !!initialData) }}>Save</Button>
       </ModalFooter>
     </>
   )
@@ -165,11 +176,15 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     return name.slice(-1);
   }
 
-  addPathLabel = (pathName: string, position: paper.Point) => {
+  addPathLabel = (pathName: string, path: paper.Path, update?: number) => {
     const { _path } = this.state;
+    if (update !== undefined) {
+      const { data } = this.state;
+      data[update].text.content = pathName;
+    }
     if ( _path) {
       _path.text.content = pathName;
-      _path.text.position = position;
+      _path.text.position = path.bounds.center;
     }
   }
 
@@ -179,10 +194,21 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     })
   }
 
-  saveData = (formData: FormData) => {
+  saveData = (formData: FormData, editing?: boolean) => {
     const { data, current, _path } = this.state;
+    if (editing) {
+      const { pathSelected } = this.state;
+      this.addPathLabel(formData.name, data[pathSelected!].path, pathSelected);
+      this.setState({
+        openModal: false,
+        data: update(pathSelected!, {
+          ...data[pathSelected!],
+          form: formData
+        }, data)
+      })
+    }
     if (_path) {
-      this.addPathLabel(formData.name, _path.path.bounds.center);
+      this.addPathLabel(formData.name, _path.path);
       this.setState({
         openModal: false,
         current: current < 7 ? current + 1 : current,
@@ -250,13 +276,14 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         if (item.selected) {
           item.selected = false;
           this.setState({
-            pathSelected: undefined
+            pathSelected: undefined,
           })
         } else {
+          let itemId = this.getDataByPath(item);
           item.bringToFront()
           item.selected = true;
           this.setState({
-            pathSelected: this.getDataByPath(item)
+            pathSelected: itemId,
           })
         }
       }
@@ -269,10 +296,13 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     if (pathSelected !== undefined) {
       this.removeFromCanvas(data[pathSelected]);
       const newData = remove(pathSelected, 1, data);
+      if (!newData.length) {
+        this.toggleEditMode(false);
+      }
       this.setState({
         pathSelected: undefined,
         data: newData,
-        current: newData.length, 
+        current: newData.length,
       })
     }
   }
@@ -305,6 +335,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   }
 
   render = () => {
+    const { pathSelected, data } = this.state;
     return (
       <>
         <ButtonGroup className="mb-3">
@@ -321,8 +352,8 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           this.state.pathSelected !== undefined ? (
             <ButtonGroup className="mb-3">
               <Button onClick={() => this.removePath()}>Remove</Button>
-              <Button onClick={() => {}}>Edit Data</Button>
-              <Button onClick={() => this.toggleEditMode(false)}>Stop editing</Button>
+              <Button onClick={() => this.toggleModal(true)}>Edit Data</Button>
+              <Button onClick={() => this.toggleEditMode(false)}>Save changes</Button>
             </ButtonGroup>
           ) : null 
         }
@@ -336,6 +367,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           <PathQuestions
             saveData={this.saveData}
             cancel={this.cancel}
+            initialData={pathSelected !== undefined ? data[pathSelected].form : undefined}
           />
         </Modal>
         <Modal isOpen={this.state.current === 7}>
