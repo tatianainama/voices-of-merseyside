@@ -259,6 +259,12 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     Tool.onMouseDrag = this.addPoint;
     Tool.onMouseUp = (event: any) => {
       this.closePath(event);
+      if (this.state._path?.path.isEmpty()) {
+        this.setState({
+          _path: undefined
+        });
+        return;
+      }
       this.toggleModal(true);
       if (this.state.current === 7) {
         Tool.remove();
@@ -394,7 +400,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           color="primary"
           onClick={() => this.props.saveData(this.state.data)}
           disabled={this.state.current === 0}
-        >Finish</Button>
+        >Finished</Button>
         <Modal isOpen={this.state.openModal}>
           <PathQuestions
             saveData={this.saveData}
