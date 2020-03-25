@@ -1,21 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, ColProps } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faReply, faTrashAlt, faEraser, faSave, faEdit, faPen } from '@fortawesome/free-solid-svg-icons';
-import { remove, update } from 'ramda';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { remove, update, difference } from 'ramda';
 
 const COLORS = [
-  '#FFC6BC',
-  '#FEDEA2',
-  '#FFF9B8',
-  '#D3DBB2',
-  '#A7D3D2',
-  '#EFE3F3',
-  '#C4D0F5',
-  '#FFC6BC',
+  '#ffc6bc',
+  '#fedea2',
+  '#fff9b8',
+  '#d3dbb2',
+  '#a7d3d2',
+  '#efe3f3',
+  '#c4d0f5',
+  '#ffc6bc',
 ];
+
+const getUnusedColor = (used: CanvasData[]): string => {
+  const usedColors = used.map(data => data.path.strokeColor?.toCSS(true));
+  const availableColors = difference(COLORS, usedColors);
+  return availableColors[0] || COLORS[0];
+}
 
 const mkBgColor = (color: string) => {
   const _color = new Paper.Color(color);
@@ -148,10 +154,11 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   }
 
   addPoint = (event: any) => {
-    const { current, _path } = this.state;
+    const { _path } = this.state;
     if (_path) {
       _path.path.add(event.point)
     } else {
+      const color = getUnusedColor(this.state.data);
       this.setState({
         _path: {
           form: {
@@ -159,8 +166,8 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
             associations: '',
             soundExample: '',
           },
-          path: mkPath(COLORS[current], event.point),
-          text: mkText(COLORS[current])
+          path: mkPath(color, event.point),
+          text: mkText(color)
         }
       })
     }
