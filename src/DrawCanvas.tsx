@@ -14,7 +14,7 @@ const COLORS = [
   '#a7d3d2',
   '#efe3f3',
   '#c4d0f5',
-  '#ffc6bc',
+  '#c0ba98',
 ];
 
 const getUnusedColor = (used: CanvasData[]): string => {
@@ -44,9 +44,7 @@ const mkPath = (color: string, point?: paper.Point) => {
 
 const mkText = (color: string) => {
   const _text = new Paper.PointText({
-    fillColor: color,
-    strokeColor: '#4b505a',
-    strokeWidth: 1,
+    fillColor: '#4b505a',
     justification: 'center',
     fontWeight: 'bold',
     fontSize: '16px',
@@ -273,9 +271,6 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         return;
       }
       this.toggleModal(true);
-      if (this.state.current === 7) {
-        Tool.remove();
-      }
     }
     Tool.activate();
     return Tool;
@@ -288,7 +283,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   mkEditTool = () => {
     const EditTool = new Paper.Tool();
     EditTool.onMouseDown = ({ item }: paper.ToolEvent) => {
-      if (item) {
+      if (item && item instanceof Path) {
         if (!item.selected && this.state.pathSelected === undefined) {
           let itemId = this.getDataByPath(item);
           item.bringToFront()
@@ -345,6 +340,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     }
   }
 
+  maxReached = () => {
+    return this.state.data.length === 8;
+  }
+
   componentDidMount = () => {
     Paper.setup('magic-canvas');
     this.setState({
@@ -367,7 +366,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           </Button>
           {
             this.state.editMode ? (
-              <Button onClick={() => this.toggleEditMode(false)} color="success">
+              <Button onClick={() => this.toggleEditMode(false)} color="success" disabled={this.maxReached()}>
                 SAVE
               </Button>
             ) : null
@@ -416,10 +415,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
             initialData={pathSelected !== undefined ? data[pathSelected].form : undefined}
           />
         </Modal>
-        <Modal isOpen={this.state.current === 7}>
+        <Modal isOpen={this.maxReached() && !this.state.editMode}>
           <ModalBody>Maximun drawings reached!</ModalBody>
           <ModalFooter>
-            <Button onClick={() => {}}>Edit drawings</Button>
+            <Button onClick={() => this.toggleEditMode(true)}>Edit drawings</Button>
             <Button onClick={() => this.props.saveData(this.state.data)}>Next step</Button>
           </ModalFooter>
         </Modal>
