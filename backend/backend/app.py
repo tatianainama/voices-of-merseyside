@@ -7,13 +7,17 @@ from flask import Flask
 from flask_restful import Api
 
 
-def start(prod=True):
+def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
     db.init_app(app)
 
     api = Api(app)
     api.add_resource(Payload, '/')
+    return app
+
+def start(prod=True):
+    app = create_app()
 
     if prod:
         waitress.serve(app, host='0.0.0.0', port=5001)
