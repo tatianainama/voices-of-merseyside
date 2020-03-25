@@ -299,6 +299,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         } else {
           if (item.selected) {
             item.selected = false;
+            item.sendToBack();
             this.setState({
               pathSelected: undefined,
             })
@@ -366,14 +367,14 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           </Button>
           {
             this.state.editMode ? (
-              <Button onClick={() => this.toggleEditMode(false)}>
-                BACK
+              <Button onClick={() => this.toggleEditMode(false)} color="success">
+                SAVE
               </Button>
             ) : null
           }
           {
             this.state.data.length && !this.state.editMode ? (
-              <Button onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0}>
+              <Button onClick={() => this.toggleEditMode(true)} disabled={this.state.current === 0} color="success">
                 EDIT
               </Button>
             ) : null
