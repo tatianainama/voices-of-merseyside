@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { remove, update, difference } from 'ramda';
@@ -80,6 +80,13 @@ type FormData = {
   associations: string,
 };
 
+type PathQuestionFormState = {
+  submitted: boolean,
+  validation: {
+    [y: string]: boolean
+  }
+}
+
 const PathQuestions: React.FunctionComponent<{
   saveData: (data: FormData, editing?: boolean) => void,
   cancel: () => void,
@@ -95,6 +102,15 @@ const PathQuestions: React.FunctionComponent<{
     associations: '',
   });
 
+  const [ form, setFormState ] = useState<PathQuestionFormState>({
+    submitted: false,
+    validation: {
+      name: false,
+      soundExample: false,
+      associations: false,
+    }
+  });
+
   useEffect(() => {
     if (initialData) {
       setData(initialData);
@@ -108,29 +124,60 @@ const PathQuestions: React.FunctionComponent<{
     });
   }
 
+  const setInputValidation = (field: keyof FormData): undefined | { valid: true } | { invalid: true } => {
+    if (!form.submitted) {
+      return undefined;
+    }
+    if (form.validation[field]) {
+      return { valid: true }
+    } else {
+      return { invalid: true }
+    }
+  }
+
+  const validateForm = () => {
+    const _form: PathQuestionFormState = {
+      submitted: true,
+      validation: {
+        name: data.name !== '',
+        soundExample: data.soundExample !== '',
+        associations: data.associations !== ''
+      }
+    }
+    setFormState(_form);
+    return Object.keys(_form.validation).every(field => _form.validation[field]);
+  }
+
   return (
     <>
       <ModalBody>
         <Form>
           <FormGroup>
             <Label for="path-name">Please name the accent spoken in this area</Label>
-            <Input type="text" id="path-name" value={data.name} onChange={handleChange('name')} />
+            <Input type="text" id="path-name" value={data.name} onChange={handleChange('name')} {...setInputValidation('name')}/>
+            <FormFeedback>Please, fill up this input</FormFeedback>
           </FormGroup>
 
           <FormGroup>
             <Label for="path-sound-example">Please provide an example of how this accent sounds</Label>
-            <Input type="text" id="path-sound-example" value={data.soundExample} onChange={handleChange('soundExample')} />
+            <Input type="text" id="path-sound-example" value={data.soundExample} onChange={handleChange('soundExample')} {...setInputValidation('soundExample')}/>
+            <FormFeedback>Please, fill up this input</FormFeedback>
           </FormGroup>
 
           <FormGroup>
             <Label for="path-associations">Please provide any associations (ideas, judgements, opinions, etc.) that come to mind when you encounter this accent/a speaker with this accent</Label>
-            <Input type="text" id="path-associations" value={data.associations} onChange={handleChange('associations')} />
+            <Input type="text" id="path-associations" value={data.associations} onChange={handleChange('associations')} {...setInputValidation('associations')}/>
+            <FormFeedback>Please, fill up this input</FormFeedback>
           </FormGroup>
         </Form> 
       </ModalBody>
       <ModalFooter>
         <Button onClick={() => { cancel() }}>Cancel</Button>
-        <Button color="primary" onClick={() => { saveData(data, !!initialData) }}>Save</Button>
+        <Button color="primary" onClick={() => {
+          if (validateForm()) {
+            saveData(data, !!initialData) 
+          }
+        }}>Save</Button>
       </ModalFooter>
     </>
   )
