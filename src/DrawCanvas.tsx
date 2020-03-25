@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, ColProps } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { remove, update, difference } from 'ramda';
@@ -286,7 +286,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
       if (item && item instanceof Path) {
         if (!item.selected && this.state.pathSelected === undefined) {
           let itemId = this.getDataByPath(item);
-          item.bringToFront()
+          item.bringToFront();
           item.selected = true;
           this.setState({
             pathSelected: itemId,
@@ -416,10 +416,13 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           />
         </Modal>
         <Modal isOpen={this.maxReached() && !this.state.editMode}>
-          <ModalBody>Maximun drawings reached!</ModalBody>
+          <ModalBody>
+            <p>Maximun amount of drawings reached</p>
+            <p>You can change your drawings or submit the map as it is</p>
+          </ModalBody>
           <ModalFooter>
-            <Button onClick={() => this.toggleEditMode(true)}>Edit drawings</Button>
-            <Button onClick={() => this.props.saveData(this.state.data)}>Next step</Button>
+            <Button onClick={() => this.toggleEditMode(true)} color="success" outline>Edit drawings</Button>
+            <Button onClick={() => this.props.saveData(this.state.data)} color="primary">Finished</Button>
           </ModalFooter>
         </Modal>
       </>
