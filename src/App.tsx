@@ -91,7 +91,7 @@ const App = () => {
       email: answers.email
     };
     const postRequest = new XMLHttpRequest();
-    postRequest.open('POST', '/backend', true);
+    postRequest.open('POST', '/backend/', true);
     postRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     postRequest.send(JSON.stringify(data));
   }
