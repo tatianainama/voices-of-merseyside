@@ -84,7 +84,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
 
   const [ submitted, submit ] = useState(false);
   const [ openModal, toggleModal ] = useState(false);
-  const [ validationResult, validate ] = useState<Validations>({..._initialValidation});
+  const [ validationResult, saveValidation ] = useState<Validations>({..._initialValidation});
   
   const setInputValidation = (field: FormDataKey): undefined | { valid: true } | { invalid: true } => {
     if (!submitted) {
@@ -104,7 +104,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     };
     setValue(newValues);
     if (submitted) {
-      validate(validateData(newValues))
+      saveValidation(validateData(newValues))
     }
   };
 
@@ -244,10 +244,12 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             if (!submitted) {
               submit(true);
             }
-            if (allValid(validationResult)) {
+            const _validation = validateData(values);
+            if (allValid(_validation)) {
               saveData(values);
+            } else {
+              saveValidation(_validation);
             }
-            validate(validateData(values));
           }}
         >Next</Button>
       </Form>

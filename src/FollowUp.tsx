@@ -12,11 +12,13 @@ const FollowUp: React.FunctionComponent<FollowUpProps> = ({ saveData }) => {
       <h2>
         Thank you for your participation
       </h2>
-      <FormGroup>
-        <Label>Would you be willing to participate in a follow-up (online) interview? If so, please leave your email address in the box provided.</Label>
-        <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)}/>
-      </FormGroup>
-      <Button color="primary" onClick={() => saveData(email)}>Finish</Button>
+      <form>
+        <FormGroup>
+          <Label>Would you be willing to participate in a follow-up (online) interview? If so, please leave your email address in the box provided.</Label>
+          <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)}/>
+        </FormGroup>
+        <Button color="primary" onClick={() => saveData(email)}>Finish</Button>
+      </form>
     </Fade>
   )
 };

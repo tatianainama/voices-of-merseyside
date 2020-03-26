@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
-import { Container, Fade, Button, Form, FormGroup, Input, Label, Progress } from 'reactstrap';
+import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstrap';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
@@ -19,7 +19,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
       <p className="lead">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quos impedit natus dolorem ipsam rem cum mollitia, cumque sapiente omnis ea sed nobis ullam, asperiores dignissimos. Unde dolore iure quisquam aut.</p>
       <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat suscipit fugiat, iste, odio tempora dolor, voluptatum assumenda enim aspernatur rem ipsam animi corrupti sapiente labore repellat quam amet. Ipsa, aspernatur!</p>
     </div>
-    <Button type="button" outline onClick={() => changePage()} color="success">Let's start!</Button>
+    <Button type="button" outline onClick={() => changePage()} color="info">Let's start!</Button>
   </Fade>
 );
 
@@ -39,7 +39,7 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
           <Input type="checkbox" id="vom-terms-check" checked={agreement} onChange={ e => setAgreement(e.target.checked)}/>
           <Label for="vom-terms-check" check>I agree</Label>
         </FormGroup>
-        <Button type="button" disabled={!agreement} color={agreement ? 'primary' : 'secondary'}  onClick={ () => changePage() }>Next</Button>
+        <Button type="button" disabled={!agreement} color={agreement ? 'info' : 'secondary'}  onClick={ () => changePage() }>Next</Button>
       </Form>
     </Fade>
   );
