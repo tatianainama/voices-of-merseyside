@@ -408,9 +408,6 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           <Button onClick={() => this.props.showHelp()} color="info">
             HELP
           </Button>
-          <Button onClick={() => this.clearCanvas()} color="danger">
-            RESET
-          </Button>
           {
             this.state.editMode ? (
               <Button onClick={() => this.toggleEditMode(false)} color="success" disabled={this.maxReached()}>
