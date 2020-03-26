@@ -81,6 +81,20 @@ const App = () => {
     setCurrentPage(currentPage + 1);
     window.scrollTo(0, 0);
   }
+  const uploadData = () => {
+    const data = {
+      personalInformation: answers.personalInformation,
+      canvas: answers.canvas.map(data => ({
+        form: data.form,
+        path: data.path.exportJSON()
+      })),
+      email: answers.email
+    };
+    const postRequest = new XMLHttpRequest();
+    postRequest.open('POST', '/backend', true);
+    postRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    postRequest.send(JSON.stringify(data));
+  }
   const sections = [
     Introduction({
       changePage: changePage
@@ -113,7 +127,8 @@ const App = () => {
           ...answers,
           email,
         });
-        changePage()
+        uploadData();
+        changePage();
       }
     }),
     FinishSection({})
