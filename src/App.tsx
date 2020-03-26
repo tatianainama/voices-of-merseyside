@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.css';
-
 import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstrap';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
