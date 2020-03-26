@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
-import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Container, Fade, Button, Form, FormGroup, Input, Label, Progress } from 'reactstrap';
 
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
@@ -59,8 +59,9 @@ type AnswersData = {
   email: string,
 };
 
+const PAGES = [0, 1, 2, 3, 4];
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(3);
+  const [ currentPage, setCurrentPage ] = useState(0);
   const [ exit, setExit ] = useState(false);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
@@ -75,33 +76,35 @@ const App = () => {
     },
     canvas: [],
     email: ''
-  });  
+  });
+  const changePage = () => {
+    setCurrentPage(currentPage + 1);
+    window.scrollTo(0, 0);
+  }
   const sections = [
     Introduction({
-      changePage: () => {setCurrentPage(currentPage + 1)}
+      changePage: changePage
     }),
     TermsAndConditions({
-      changePage: () => {setCurrentPage(currentPage + 1)}
+      changePage: changePage
     }),
     PersonalInformation({
       closeApp: () => setExit(true),
       saveData: (data: FormData) => {
-        console.log("data", data)
         saveAnswers({
           ...answers,
           personalInformation: data
         });
-        setCurrentPage(currentPage + 1);
+        changePage()
       }
     }),
     DrawCanvas({
       saveData: (data) => {
-        console.log("data", data)
         saveAnswers({
           ...answers,
           canvas: data
         });
-        setCurrentPage(currentPage + 1);
+        changePage()
       }
     }),
     FollowUp({
@@ -110,28 +113,36 @@ const App = () => {
           ...answers,
           email,
         });
-        setCurrentPage(currentPage + 1);
-        console.log(answers)
+        changePage()
       }
     }),
     FinishSection({})
   ];
   return (
-    <div className="App">
-      <Container>
+    <>
+      <div id="vom-progress-bar">
         {
-          !exit ? (
-            sections[currentPage]
-          ) : (
-            <Fade in={exit} tag="section">
-              <h4>
-                Thank you for your interest, but permission from your parent/guardian is required before you are able to participate.
-              </h4>
-            </Fade>
-          )
+          PAGES.map(page => (
+            <div key={page} className={`vom-progress-page ${page <= currentPage ? 'progress-done' : ''}`}></div>
+          ))
         }
-      </Container>
-    </div>
+      </div>
+      <div className="App">
+        <Container>
+          {
+            !exit ? (
+              sections[currentPage]
+            ) : (
+              <Fade in={exit} tag="section">
+                <h4>
+                  Thank you for your interest, but permission from your parent/guardian is required before you are able to participate.
+                </h4>
+              </Fade>
+            )
+          }
+        </Container>
+      </div>
+    </>
   )
 };
 
