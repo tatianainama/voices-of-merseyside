@@ -5,6 +5,8 @@ import {
   Route
 } from "react-router-dom";
 import App from './App';
+import Admin from './Admin';
+
 import './App.css';
 
 export const AppRouting = () => {
@@ -16,9 +18,7 @@ export const AppRouting = () => {
             <App></App>
           </Route>
           <Route path="/admin">
-            <div>
-              <h1>Admin time</h1>
-            </div>
+            <Admin></Admin>
           </Route>
         </Switch>
       </div>
