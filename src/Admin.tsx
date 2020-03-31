@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Paper, { Path, PaperScope, Group } from 'paper';
-import { equals, without, append } from 'ramda';
+import { equals, without, append, isNil, not, identity } from 'ramda';
 import Axios from 'axios';
 
 type AgeVal = '1' | '2' | '3' | '4' | '5' | '6';
@@ -45,7 +45,7 @@ const NON_NATIVE_MAP: {
 }
 
 const GENDER = [ 'female', 'male', 'other' ];
-const ETHNICITY = [
+const ETHNICITY: EthnicityVal[] = [
   'English/Welsh/Scottish/Northern Irish/British',
   'Irish',
   'Gypsy or Irish Traveller',
@@ -71,7 +71,7 @@ type Result = {
     ethnicityCustom: string,
     birthPlace: string,
     currentPlace: string,
-    nonNative: string
+    nonNative: NonNativeVal
   },
   canvas: OriginalCanvasData[],
   email: string
@@ -79,6 +79,7 @@ type Result = {
 
 type StateData = {
   personalInformation: {
+    [key: string]: string,
     age: AgeVal,
     gender: GenderVal,
     genderCustom: string,
@@ -86,7 +87,7 @@ type StateData = {
     ethnicityCustom: string,
     birthPlace: string,
     currentPlace: string,
-    nonNative: string
+    nonNative: NonNativeVal
   },
   canvas?: CanvasData[],
   group: paper.Group,
@@ -110,6 +111,7 @@ type CanvasData = {
 };
 
 type AdminState = {
+  original: StateData[],
   data: StateData[],
   canvas?: paper.PaperScope
 };
@@ -131,7 +133,8 @@ class Admin extends React.Component<{}, AdminState> {
     super(props);
     this.state = {
       canvas: undefined,
-      data: []
+      original: [],
+      data: [],
     };
   }
 
@@ -163,9 +166,36 @@ class Admin extends React.Component<{}, AdminState> {
       })
       this.setState({
         canvas,
+        original: _data,
         data: _data,
       })
     })
+  }
+
+  applyFilters = (filters: Filters) => {
+    const keys = Object.keys(filters);
+    const result = this.state.original.filter(
+      result => {
+        const matches = keys.map(k => {
+          if ( k !== 'nonNative') {
+            return !isNil(filters[k].find(equals(result.personalInformation[k])))
+          } else {
+            return true;
+          }
+        }).every(identity);
+        if (matches) {
+          result.group.visible = true;
+          return true
+        } else {
+          result.group.visible = false;
+          return false;
+        }
+      }
+    )
+    this.setState({
+      data: result
+    })
+    console.log("filter, original", result, this.state.original);
   }
 
   render() {
@@ -173,10 +203,12 @@ class Admin extends React.Component<{}, AdminState> {
       <div className="App Admin">
         <Container fluid>
           <h2>Administration panel</h2>
-          <p>total responses: <Badge color="info">{this.state.data.length}</Badge></p>
+          <p>total responses: <Badge color="info">{this.state.original.length}</Badge></p>
           <div id="vom-results">
             <canvas id="vom-admin-canvas"></canvas>
-            <FilterPanel></FilterPanel>
+            <FilterPanel
+              applyFilters={this.applyFilters}
+            ></FilterPanel>
           </div>
         </Container>
       </div>
@@ -184,10 +216,18 @@ class Admin extends React.Component<{}, AdminState> {
   }
 }
 
-const FilterPanel = () => {
-  const [filters, setFilters] = useState<{
-    [x: string]: string[]
-  }>({
+type Filters = {
+  [filter: string]: string[],
+  age: AgeVal[],
+  gender: GenderVal[],
+  ethnicity: EthnicityVal[],
+  nonNative: NonNativeVal[]
+}
+
+const FilterPanel: React.FunctionComponent<{
+  applyFilters: (filters: Filters) => void
+}> = ({ applyFilters }) => {
+  const [filters, setFilters] = useState<Filters>({
     age: [ '1', '2', '3', '4', '5', '6' ],
     gender: [ 'female', 'male', 'other'],
     ethnicity: [...ETHNICITY],
@@ -199,10 +239,12 @@ const FilterPanel = () => {
   }
 
   const handleCheck = (field: string, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({
+    const _filters = {
       ...filters,
       [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
-    })
+    };
+    applyFilters(_filters);
+    setFilters(_filters)
   }
 
   return (
