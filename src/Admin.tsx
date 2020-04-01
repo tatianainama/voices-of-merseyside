@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input } from 'reactstrap';
-import Paper, { Path, PaperScope, Group } from 'paper';
+import Paper, { Path, PaperScope, Group, Color } from 'paper';
 import { equals, without, append, isNil, not, identity } from 'ramda';
 import Axios from 'axios';
 
@@ -127,6 +127,33 @@ const mkPathLabel = (pathName: string, path: paper.Path) => {
   })
 }
 
+const COLORS = [
+  '#ffc6bc',
+  '#fedea2',
+  '#fff9b8',
+  '#d3dbb2',
+  '#a7d3d2',
+  '#efe3f3',
+  '#c4d0f5',
+  '#c0ba98',
+];
+
+const mkBgColor = (color: string) => {
+  const _color = new Paper.Color(color);
+  _color.alpha = 0.5;
+  return _color;
+};
+
+const mkPath = (pathData: string, i: number): paper.Path => {
+  const color = COLORS[i % COLORS.length];
+  const _path = new Path();
+  _path.importJSON(pathData);
+  _path.strokeColor = new Color(color);
+  _path.strokeWidth = 5;
+  _path.fillColor = mkBgColor(color)
+  return _path;
+}
+
 class Admin extends React.Component<{}, AdminState> {
 
   constructor(props: any) {
@@ -138,10 +165,9 @@ class Admin extends React.Component<{}, AdminState> {
     };
   }
 
-  mkPathGroup = (data: OriginalCanvasData[]) => {
+  mkPathGroup = (data: OriginalCanvasData[], index: number) => {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value) => {
-      const _path = new Path();
-      _path.importJSON(value.path);
+      const _path = mkPath(value.path, index);
       const _text = mkPathLabel(value.form.name, _path);
       return [
         ...group,
@@ -149,7 +175,8 @@ class Admin extends React.Component<{}, AdminState> {
         _text,
       ]
     }, []);
-    return new Group(_data);
+    const group = new Group(_data);
+    return group;
   }
 
   componentDidMount = () => {
@@ -157,11 +184,11 @@ class Admin extends React.Component<{}, AdminState> {
     canvas.setup('vom-admin-canvas');
 
     Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
-      const _data = response.data.map(result => {
+      const _data = response.data.map((result, index) => {
         return {
           ...result,
           canvas: undefined,
-          group: this.mkPathGroup(result.canvas)
+          group: this.mkPathGroup(result.canvas, index)
         };
       })
       this.setState({
@@ -203,7 +230,10 @@ class Admin extends React.Component<{}, AdminState> {
       <div className="App Admin">
         <Container fluid>
           <h2>Administration panel</h2>
-          <p>total responses: <Badge color="info">{this.state.original.length}</Badge></p>
+          <div className="vom-results-data">
+            <p>total responses: <Badge color="info">{this.state.original.length}</Badge></p>
+            <p>showing: <Badge color="info">{this.state.data.length}</Badge></p>
+          </div>
           <div id="vom-results">
             <canvas id="vom-admin-canvas"></canvas>
             <FilterPanel

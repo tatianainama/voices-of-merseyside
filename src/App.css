@@ -128,3 +128,11 @@ form button {
   grid-template-columns: 1fr 1fr;
   row-gap: 5px;
 }
+
+.vom-results-data {
+  display: flex;
+}
+
+.vom-results-data p {
+  padding-right: 1rem;
+}
