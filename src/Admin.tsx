@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Container, Badge, FormGroup, Label, Input } from 'reactstrap';
+import { Container, Badge, FormGroup, Label, Input, Button } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
-import { equals, without, append, isNil, not, identity } from 'ramda';
+import { equals, without, append, isNil, identity } from 'ramda';
 import Axios from 'axios';
 
 type AgeVal = '1' | '2' | '3' | '4' | '5' | '6';
@@ -201,15 +201,16 @@ class Admin extends React.Component<{}, AdminState> {
 
   applyFilters = (filters: Filters) => {
     const keys = Object.keys(filters);
-    const result = this.state.original.filter(
+    const results = this.state.original.filter(
       result => {
         const matches = keys.map(k => {
           if ( k !== 'nonNative') {
-            return !isNil(filters[k].find(equals(result.personalInformation[k])))
+            return !isNil(filters[k].find(equals(result.personalInformation[k])));
           } else {
             return true;
           }
         }).every(identity);
+        console.log(result.personalInformation, matches)
         if (matches) {
           result.group.visible = true;
           return true
@@ -220,9 +221,9 @@ class Admin extends React.Component<{}, AdminState> {
       }
     )
     this.setState({
-      data: result
+      data: results
     })
-    console.log("filter, original", result, this.state.original);
+    console.log("filter, original", results, this.state.original);
   }
 
   render() {
@@ -257,30 +258,54 @@ type Filters = {
 const FilterPanel: React.FunctionComponent<{
   applyFilters: (filters: Filters) => void
 }> = ({ applyFilters }) => {
-  const [filters, setFilters] = useState<Filters>({
+  
+  const _initialState: Filters = {
     age: [ '1', '2', '3', '4', '5', '6' ],
     gender: [ 'female', 'male', 'other'],
     ethnicity: [...ETHNICITY],
     nonNative: ['1', '2', '3', '4']
-  });
+  };
+
+  const _cleanState: Filters = {
+    age: [],
+    gender: [],
+    ethnicity: [],
+    nonNative: []
+  }
+
+  const [filters, setFilters] = useState<Filters>({..._initialState});
 
   const isChecked = (field: string, value: string) => {
     return !!filters[field].find(equals(value));
   }
 
   const handleCheck = (field: string, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(filters, field, value, target.checked, append(value, filters[field]))
     const _filters = {
       ...filters,
       [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
     };
-    applyFilters(_filters);
-    setFilters(_filters)
+    handleFilter(_filters)
+  }
+
+  const handleFilter = (filters: Filters) => {
+    console.log("apply", filters)
+    applyFilters(filters);
+    setFilters(filters)
   }
 
   return (
     <div id="vom-results-filters">
-      <h4>Filters</h4>
-      <h6>Age</h6>
+      <h4>
+        Filters
+        <div id="vom-filter-actions">
+          <Button outline size="sm" color="secondary" onClick={() => handleFilter({..._initialState})}>Select all</Button>  
+          <Button outline size="sm" color="secondary" onClick={() => handleFilter({..._cleanState})} disabled>Clear all</Button>  
+        </div>
+      </h4>
+      <h6>
+        Age
+      </h6>
       <FormGroup className="vom-filter-group">
         {
           Object.keys(AGE_MAP).map(value => (
@@ -292,6 +317,8 @@ const FilterPanel: React.FunctionComponent<{
           ))
         }
       </FormGroup>
+
+      <hr></hr>
 
       <h6>Gender</h6>
       <FormGroup className="vom-filter-group">
@@ -306,6 +333,7 @@ const FilterPanel: React.FunctionComponent<{
         }
       </FormGroup>
 
+      <hr/>
       <h6>ethnicity</h6>
       <FormGroup className="vom-filter-group">
         {
@@ -318,7 +346,7 @@ const FilterPanel: React.FunctionComponent<{
           ))
         }
       </FormGroup>
-
+        <hr/>
       <h6>
         Non natives
       </h6>

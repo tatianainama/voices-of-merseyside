@@ -123,10 +123,19 @@ form button {
   margin-bottom: 0.1rem;
 }
 
+#vom-results-filters h4 {
+  display: flex;
+  justify-content: space-between;
+}
+
 .vom-filter-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
   row-gap: 5px;
+}
+
+#vom-filter-actions button {
+  margin-left: 10px;
 }
 
 .vom-results-data {
@@ -136,3 +145,4 @@ form button {
 .vom-results-data p {
   padding-right: 1rem;
 }
+
