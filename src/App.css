@@ -51,6 +51,10 @@ form button {
   align-self: flex-end;
 }
 
+.text-muted {
+  color: #b7c3ce!important;
+}
+
 #magic-canvas,
 #vom-admin-canvas {
   width: 100%;

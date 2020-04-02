@@ -141,7 +141,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           required
           { ...setInputValidation('age') }
           >
-            <option value="" disabled>Please chooose</option>
+            <option value="" disabled>Please choose</option>
             <option value="1">11 - 17</option>
             <option value="2">18 - 25</option>
             <option value="3">26 - 45</option>
@@ -223,15 +223,15 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
         </FormGroup>
 
         <FormGroup>
-          <Label for="post-code">Current place of residence (postcode)</Label>
-          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') }/>
+          <Label for="post-code">Current place of residence</Label>
+          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') } placeholder="(postcode area, e.g: CH48)"/>
           <FormFeedback>Please, fill up this input</FormFeedback>
         </FormGroup>
 
         <FormGroup>
-          <Label for="non-native">If you were <b>not</b> born in Merseyside:</Label>
+          <Label for="non-native">If you were <b>not</b> born in Merseyside, please choose from the following options:</Label>
           <Input type="select" id="non-native" value={values.nonNative} onChange={handleSelect('nonNative')} { ...setInputValidation('nonNative') }>
-            <option value='' disabled>Please choose</option>
+            <option value='' disabled>I have lived in Merseyside for</option>
             <option value="1">Less than two years</option>
             <option value="2">3-5 years</option>
             <option value="3">6-10 years</option>
