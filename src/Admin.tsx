@@ -3,64 +3,7 @@ import { Container, Badge, FormGroup, Label, Input, Button } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
 import { equals, without, append, isNil, identity } from 'ramda';
 import Axios from 'axios';
-
-type AgeVal = '1' | '2' | '3' | '4' | '5' | '6';
-type GenderVal = 'female' | 'male' | 'other';
-type EthnicityVal =
-  'English/Welsh/Scottish/Northern Irish/British' |
-  'Irish' |
-  'Gypsy or Irish Traveller' |
-  'White and Black Caribbean' |
-  'White and Black African' |
-  'White and Asian' |
-  'Indian' |
-  'Pakistani' |
-  'Bangladeshi' |
-  'Chinese' |
-  'African' |
-  'Caribbean' |
-  'Arab' |
-  'other';
-  
-type NonNativeVal = '1' | '2' | '3' | '4';
-
-const AGE_MAP: {
-  [x: string]: string,
-} = {
-  '1': '11 - 17',
-  '2': '18 - 25',
-  '3': '26 - 45',
-  '4': '46 - 65',
-  '5': '66 - 75',
-  '6': '75+'
-};
-
-const NON_NATIVE_MAP: {
-  [x: string]: string,
-} = {
-  '1': 'Less than two years',
-  '2': '3-5 years',
-  '3': '6-10 years',
-  '4': '10+ years'
-}
-
-const GENDER = [ 'female', 'male', 'other' ];
-const ETHNICITY: EthnicityVal[] = [
-  'English/Welsh/Scottish/Northern Irish/British',
-  'Irish',
-  'Gypsy or Irish Traveller',
-  'White and Black Caribbean',
-  'White and Black African',
-  'White and Asian',
-  'Indian',
-  'Pakistani',
-  'Bangladeshi',
-  'Chinese',
-  'African',
-  'Caribbean',
-  'Arab',
-  'other'
-];
+import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters } from './services';
 
 type Result = {
   personalInformation: {
@@ -210,7 +153,6 @@ class Admin extends React.Component<{}, AdminState> {
             return true;
           }
         }).every(identity);
-        console.log(result.personalInformation, matches)
         if (matches) {
           result.group.visible = true;
           return true
@@ -223,7 +165,6 @@ class Admin extends React.Component<{}, AdminState> {
     this.setState({
       data: results
     })
-    console.log("filter, original", results, this.state.original);
   }
 
   render() {
@@ -247,40 +188,17 @@ class Admin extends React.Component<{}, AdminState> {
   }
 }
 
-type Filters = {
-  [filter: string]: string[],
-  age: AgeVal[],
-  gender: GenderVal[],
-  ethnicity: EthnicityVal[],
-  nonNative: NonNativeVal[]
-}
-
 const FilterPanel: React.FunctionComponent<{
   applyFilters: (filters: Filters) => void
 }> = ({ applyFilters }) => {
-  
-  const _initialState: Filters = {
-    age: [ '1', '2', '3', '4', '5', '6' ],
-    gender: [ 'female', 'male', 'other'],
-    ethnicity: [...ETHNICITY],
-    nonNative: ['1', '2', '3', '4']
-  };
 
-  const _cleanState: Filters = {
-    age: [],
-    gender: [],
-    ethnicity: [],
-    nonNative: []
-  }
-
-  const [filters, setFilters] = useState<Filters>({..._initialState});
+  const [filters, setFilters] = useState<Filters>({ ...VALUES.FILTER });
 
   const isChecked = (field: string, value: string) => {
     return !!filters[field].find(equals(value));
   }
 
   const handleCheck = (field: string, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(filters, field, value, target.checked, append(value, filters[field]))
     const _filters = {
       ...filters,
       [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
@@ -289,7 +207,6 @@ const FilterPanel: React.FunctionComponent<{
   }
 
   const handleFilter = (filters: Filters) => {
-    console.log("apply", filters)
     applyFilters(filters);
     setFilters(filters)
   }
@@ -299,8 +216,8 @@ const FilterPanel: React.FunctionComponent<{
       <h4>
         Filters
         <div id="vom-filter-actions">
-          <Button outline size="sm" color="secondary" onClick={() => handleFilter({..._initialState})}>Select all</Button>  
-          <Button outline size="sm" color="secondary" onClick={() => handleFilter({..._cleanState})} disabled>Clear all</Button>  
+          <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.FILTER })}>Select all</Button>  
+          <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.CLEAN_FILTER })} disabled>Clear all</Button>  
         </div>
       </h4>
       <h6>
@@ -308,10 +225,10 @@ const FilterPanel: React.FunctionComponent<{
       </h6>
       <FormGroup className="vom-filter-group">
         {
-          Object.keys(AGE_MAP).map(value => (
+          (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
             <FormGroup check inline key={value}>
               <Label check>
-                <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{AGE_MAP[value]}
+                <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
               </Label>
             </FormGroup>
           ))
@@ -323,7 +240,7 @@ const FilterPanel: React.FunctionComponent<{
       <h6>Gender</h6>
       <FormGroup className="vom-filter-group">
         {
-          GENDER.map(value => (
+          VALUES.GENDER.map(value => (
             <FormGroup check inline key={value}>
               <Label check>
                 <Input type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
@@ -337,7 +254,7 @@ const FilterPanel: React.FunctionComponent<{
       <h6>ethnicity</h6>
       <FormGroup className="vom-filter-group">
         {
-          ETHNICITY.map(value => (
+          VALUES.ETHNICITY.map(value => (
             <FormGroup check inline key={value}>
               <Label check>
                 <Input type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
@@ -352,10 +269,10 @@ const FilterPanel: React.FunctionComponent<{
       </h6>
       <FormGroup className="vom-filter-group">
         {
-          Object.keys(NON_NATIVE_MAP).map(value => (
+          (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
             <FormGroup check inline key={value}>
               <Label check>
-                <Input type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{NON_NATIVE_MAP[value]}
+                <Input type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
               </Label>
             </FormGroup>
           ))
