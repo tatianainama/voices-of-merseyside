@@ -135,7 +135,6 @@ class Admin extends React.Component<{}, AdminState> {
           group: this.mkPathGroup(result.canvas, index)
         };
       })
-      console.log(_data)
       this.setState({
         canvas,
         original: _data,
