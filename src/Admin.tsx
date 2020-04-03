@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
-import { equals, without, append, isNil, identity } from 'ramda';
+import { equals, without, append, isNil, identity, isEmpty } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
@@ -128,13 +128,14 @@ class Admin extends React.Component<{}, AdminState> {
     canvas.setup('vom-admin-canvas');
 
     Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
-      const _data = response.data.map((result, index) => {
+    const _data = response.data.map((result, index) => {
         return {
           ...result,
           canvas: undefined,
           group: this.mkPathGroup(result.canvas, index)
         };
       })
+      console.log(_data)
       this.setState({
         canvas,
         original: _data,
@@ -146,9 +147,10 @@ class Admin extends React.Component<{}, AdminState> {
   applyFilters = (filters: Filters) => {
     const results = this.state.original.filter(
       result => {
-        const matches = VALUES.FILTER_KEYS.map(k => {
-          if ( k !== 'nonNative') {
-            return !isNil(filters[k].find(equals<string>(result.personalInformation[k])));
+        const matches = VALUES.FILTER_KEYS.map(filterKey => {
+          const appliedFilter = filters[filterKey];
+          if (appliedFilter) {
+            return !isNil(filters[filterKey].find(equals<string>(result.personalInformation[filterKey])))
           } else {
             return true;
           }
@@ -197,7 +199,7 @@ const FilterPanel: React.FunctionComponent<{
     age: true,
     ethnicity: true,
     gender: true,
-    nonNative: true
+    nonNative: false
   });
 
   const isFilterActive = (field: FilterVal) => {
@@ -210,6 +212,14 @@ const FilterPanel: React.FunctionComponent<{
       [field]: target.checked
     }
     setActiveFilters(_filters);
+    if (target.checked) {
+      applyFilters(filters)
+    } else {
+      applyFilters({
+        ...filters,
+        [field]: undefined
+      })
+    }
   }
 
   const isChecked = (field: FilterVal, value: string) => {
