@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Container, Badge, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
 import { equals, without, append, isNil, identity } from 'ramda';
 import Axios from 'axios';
-import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters } from './services';
+import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
 type Result = {
   personalInformation: {
@@ -20,18 +20,19 @@ type Result = {
   email: string
 }
 
+type PersonalInformation = Record<FilterVal, string> & {
+  age: AgeVal,
+  gender: GenderVal,
+  genderCustom: string,
+  ethnicity: EthnicityVal,
+  ethnicityCustom: string,
+  birthPlace: string,
+  currentPlace: string,
+  nonNative: NonNativeVal
+}
+
 type StateData = {
-  personalInformation: {
-    [key: string]: string,
-    age: AgeVal,
-    gender: GenderVal,
-    genderCustom: string,
-    ethnicity: EthnicityVal,
-    ethnicityCustom: string,
-    birthPlace: string,
-    currentPlace: string,
-    nonNative: NonNativeVal
-  },
+  personalInformation: PersonalInformation,
   canvas?: CanvasData[],
   group: paper.Group,
   email: string
@@ -143,12 +144,11 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   applyFilters = (filters: Filters) => {
-    const keys = Object.keys(filters);
     const results = this.state.original.filter(
       result => {
-        const matches = keys.map(k => {
+        const matches = VALUES.FILTER_KEYS.map(k => {
           if ( k !== 'nonNative') {
-            return !isNil(filters[k].find(equals(result.personalInformation[k])));
+            return !isNil(filters[k].find(equals<string>(result.personalInformation[k])));
           } else {
             return true;
           }
@@ -193,12 +193,30 @@ const FilterPanel: React.FunctionComponent<{
 }> = ({ applyFilters }) => {
 
   const [filters, setFilters] = useState<Filters>({ ...VALUES.FILTER });
+  const [activeFilters, setActiveFilters] = useState<FilterStatus>({
+    age: true,
+    ethnicity: true,
+    gender: true,
+    nonNative: true
+  });
 
-  const isChecked = (field: string, value: string) => {
+  const isFilterActive = (field: FilterVal) => {
+    return activeFilters[field]
+  };
+
+  const activateFilter = (field: FilterVal) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    const _filters = {
+      ...activeFilters,
+      [field]: target.checked
+    }
+    setActiveFilters(_filters);
+  }
+
+  const isChecked = (field: FilterVal, value: string) => {
     return !!filters[field].find(equals(value));
   }
 
-  const handleCheck = (field: string, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheck = (field: FilterVal, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const _filters = {
       ...filters,
       [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
@@ -220,67 +238,95 @@ const FilterPanel: React.FunctionComponent<{
           <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.CLEAN_FILTER })} disabled>Clear all</Button>  
         </div>
       </h4>
-      <h6>
-        Age
-      </h6>
-      <FormGroup className="vom-filter-group">
-        {
-          (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+
+      <Switch id="age-switch" checked={isFilterActive('age')} onChange={activateFilter('age')}>
+        <h6>
+          Age
+        </h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('age')}>
+        <FormGroup className="vom-filter-group">
+            {
+              (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
+                <FormGroup check inline key={value}>
+                  <Label check>
+                    <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
+                  </Label>
+                </FormGroup>
+              ))
+            }
+        </FormGroup>
+      </Collapse>
 
       <hr></hr>
 
-      <h6>Gender</h6>
-      <FormGroup className="vom-filter-group">
-        {
-          VALUES.GENDER.map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+      <Switch id="gender-switch" checked={isFilterActive('gender')} onChange={activateFilter('gender')}>
+        <h6>Gender</h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('gender')}>
+        <FormGroup className="vom-filter-group">
+          {
+            VALUES.GENDER.map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('gender')} type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
 
       <hr/>
-      <h6>ethnicity</h6>
-      <FormGroup className="vom-filter-group">
-        {
-          VALUES.ETHNICITY.map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
-        <hr/>
-      <h6>
-        Non natives
-      </h6>
-      <FormGroup className="vom-filter-group">
-        {
-          (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+
+      <Switch id="ethnicity-switch" checked={isFilterActive('ethnicity')} onChange={activateFilter('ethnicity')}>
+        <h6>ethnicity</h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('ethnicity')}>
+        <FormGroup className="vom-filter-group">
+          {
+            VALUES.ETHNICITY.map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('ethnicity')} type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
+      <hr/>
+      
+      <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>
+        <h6> Non natives </h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('nonNative')}>
+        <FormGroup className="vom-filter-group">
+          {
+            (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('nonNative')} type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
 
     </div>
   )
 }
+
+const Switch: React.FunctionComponent<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>> = ({ id, children , ...props}) => {
+  return (
+    <div className="custom-control custom-switch">
+      <input type="checkbox" className="custom-control-input" id={id} {...props} />
+      <label className="custom-control-label" htmlFor={id}>
+        { children }
+      </label>
+    </div>
+  )
+};
 
 export default Admin;

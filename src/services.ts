@@ -18,14 +18,18 @@ export type EthnicityVal =
   'other';
   
 export type NonNativeVal = '1' | '2' | '3' | '4';
+export type FilterVal = 'age' | 'gender' | 'ethnicity' | 'nonNative';
 
 export type Filters = {
-  [filter: string]: string[],
-  age: AgeVal[],
-  gender: GenderVal[],
-  ethnicity: EthnicityVal[],
-  nonNative: NonNativeVal[]
-}
+  [filter in FilterVal]: string[];
+} & {
+  age: AgeVal[];
+  gender: GenderVal[];
+  ethnicity: EthnicityVal[];
+  nonNative: NonNativeVal[];
+};
+
+export type FilterStatus = Record<FilterVal, boolean>
 
 const AGE: { [k in AgeVal]: string } = {
   '1': '11 - 17',
@@ -62,6 +66,13 @@ const ETHNICITY: EthnicityVal[] = [
   'other'
 ];
 
+const FILTER_KEYS: FilterVal[] = [
+  'age',
+  'gender',
+  'ethnicity',
+  'nonNative'
+];
+
 const FILTER: Filters = {
   age: [ '1', '2', '3', '4', '5', '6' ],
   gender: [ ...GENDER ],
@@ -82,5 +93,6 @@ export default {
   GENDER,
   ETHNICITY,
   FILTER,
-  CLEAN_FILTER
+  CLEAN_FILTER,
+  FILTER_KEYS
 };

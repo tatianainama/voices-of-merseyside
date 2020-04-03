@@ -51,6 +51,20 @@ form button {
   align-self: flex-end;
 }
 
+
+.custom-switch {
+  display: flex;
+}
+
+.custom-control-label {
+  display: flex;
+  align-items: center; 
+}
+
+.custom-control-label h6 {
+  margin-bottom: 0!important;
+}
+
 #magic-canvas,
 #vom-admin-canvas {
   width: 100%;
@@ -132,6 +146,7 @@ form button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   row-gap: 5px;
+  margin-bottom: 0;
 }
 
 #vom-filter-actions button {
