@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
-import { equals, without, append, isNil, identity, isEmpty } from 'ramda';
+import { equals, without, append, isNil, identity } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
