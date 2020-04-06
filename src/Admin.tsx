@@ -215,7 +215,10 @@ const FilterPanel: React.FunctionComponent<{
     }
     
     if (target.checked) {
-      handleFilter(filters);
+      handleFilter({
+        ...filters,
+        [field]: VALUES.FILTER[field]
+      });
     } else {
       handleFilter({
         ...filters,
@@ -246,9 +249,9 @@ const FilterPanel: React.FunctionComponent<{
     handleFilter(_filters)
   }
 
-  const handleFilter = (filters: Filters) => {
-    applyFilters(filters);
-    setFilters(filters)
+  const handleFilter = (_filters: Filters) => {
+    applyFilters(_filters);
+    setFilters(_filters)
   }
 
   return (
