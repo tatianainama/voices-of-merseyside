@@ -21,12 +21,12 @@ export type NonNativeVal = '1' | '2' | '3' | '4';
 export type FilterVal = 'age' | 'gender' | 'ethnicity' | 'nonNative';
 
 export type Filters = {
-  [filter in FilterVal]: string[];
+  [filter in FilterVal]?: string[];
 } & {
-  age: AgeVal[];
-  gender: GenderVal[];
-  ethnicity: EthnicityVal[];
-  nonNative: NonNativeVal[];
+  age?: AgeVal[];
+  gender?: GenderVal[];
+  ethnicity?: EthnicityVal[];
+  nonNative?: NonNativeVal[];
 };
 
 export type FilterStatus = Record<FilterVal, boolean>

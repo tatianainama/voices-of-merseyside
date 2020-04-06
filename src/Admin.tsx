@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
-import { equals, without, append, isNil, identity } from 'ramda';
+import { equals, without, append, isNil, identity, Filter, includes } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
@@ -149,7 +149,7 @@ class Admin extends React.Component<{}, AdminState> {
         const matches = VALUES.FILTER_KEYS.map(filterKey => {
           const appliedFilter = filters[filterKey];
           if (appliedFilter) {
-            return !isNil(filters[filterKey].find(equals<string>(result.personalInformation[filterKey])))
+            return !isNil(filters[filterKey]?.find(equals<string>(result.personalInformation[filterKey])))
           } else {
             return true;
           }
@@ -193,7 +193,10 @@ const FilterPanel: React.FunctionComponent<{
   applyFilters: (filters: Filters) => void
 }> = ({ applyFilters }) => {
 
-  const [filters, setFilters] = useState<Filters>({ ...VALUES.FILTER });
+  const [filters, setFilters] = useState<Filters>({ 
+    ...VALUES.FILTER,
+    nonNative: undefined
+  });
   const [activeFilters, setActiveFilters] = useState<FilterStatus>({
     age: true,
     ethnicity: true,
@@ -210,25 +213,35 @@ const FilterPanel: React.FunctionComponent<{
       ...activeFilters,
       [field]: target.checked
     }
-    setActiveFilters(_filters);
+    
     if (target.checked) {
-      applyFilters(filters)
+      handleFilter(filters);
     } else {
-      applyFilters({
+      handleFilter({
         ...filters,
         [field]: undefined
       })
     }
+    setActiveFilters(_filters);
+  }
+
+  const selectAll = () => {
+    
   }
 
   const isChecked = (field: FilterVal, value: string) => {
-    return !!filters[field].find(equals(value));
+    const values = filters[field];
+    if (values){
+      return includes(value, values);
+    } else {
+      return false
+    }
   }
 
   const handleCheck = (field: FilterVal, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const _filters = {
       ...filters,
-      [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
+      [field]: target.checked ? append(value, filters[field] || []) : without([ value ], filters[field] || [])
     };
     handleFilter(_filters)
   }
@@ -243,7 +256,7 @@ const FilterPanel: React.FunctionComponent<{
       <h4>
         Filters
         <div id="vom-filter-actions">
-          <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.FILTER })}>Select all</Button>  
+          <Button outline size="sm" color="secondary" onClick={selectAll}>Select all</Button>  
           <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.CLEAN_FILTER })} disabled>Clear all</Button>  
         </div>
       </h4>
