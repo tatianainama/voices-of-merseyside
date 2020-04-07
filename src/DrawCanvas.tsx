@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import Paper, { Path } from 'paper';
+import Paper, { Path, PaperScope } from 'paper';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
@@ -392,7 +392,9 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
   }
 
   componentDidMount = () => {
-    Paper.setup('magic-canvas');
+    const canvas = new PaperScope();
+    canvas.setup('magic-canvas');
+    canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     this.setState({
       drawTool: this.mkDrawTool(),
       editTool: this.mkEditTool(),

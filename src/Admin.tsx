@@ -1,66 +1,9 @@
 import React, { useState } from 'react';
-import { Container, Badge, FormGroup, Label, Input } from 'reactstrap';
+import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Group, Color } from 'paper';
-import { equals, without, append, isNil, not, identity } from 'ramda';
+import { equals, without, append, isNil, identity, includes } from 'ramda';
 import Axios from 'axios';
-
-type AgeVal = '1' | '2' | '3' | '4' | '5' | '6';
-type GenderVal = 'female' | 'male' | 'other';
-type EthnicityVal =
-  'English/Welsh/Scottish/Northern Irish/British' |
-  'Irish' |
-  'Gypsy or Irish Traveller' |
-  'White and Black Caribbean' |
-  'White and Black African' |
-  'White and Asian' |
-  'Indian' |
-  'Pakistani' |
-  'Bangladeshi' |
-  'Chinese' |
-  'African' |
-  'Caribbean' |
-  'Arab' |
-  'other';
-  
-type NonNativeVal = '1' | '2' | '3' | '4';
-
-const AGE_MAP: {
-  [x: string]: string,
-} = {
-  '1': '11 - 17',
-  '2': '18 - 25',
-  '3': '26 - 45',
-  '4': '46 - 65',
-  '5': '66 - 75',
-  '6': '75+'
-};
-
-const NON_NATIVE_MAP: {
-  [x: string]: string,
-} = {
-  '1': 'Less than two years',
-  '2': '3-5 years',
-  '3': '6-10 years',
-  '4': '10+ years'
-}
-
-const GENDER = [ 'female', 'male', 'other' ];
-const ETHNICITY: EthnicityVal[] = [
-  'English/Welsh/Scottish/Northern Irish/British',
-  'Irish',
-  'Gypsy or Irish Traveller',
-  'White and Black Caribbean',
-  'White and Black African',
-  'White and Asian',
-  'Indian',
-  'Pakistani',
-  'Bangladeshi',
-  'Chinese',
-  'African',
-  'Caribbean',
-  'Arab',
-  'other'
-];
+import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
 type Result = {
   personalInformation: {
@@ -77,18 +20,19 @@ type Result = {
   email: string
 }
 
+type PersonalInformation = Record<FilterVal, string> & {
+  age: AgeVal,
+  gender: GenderVal,
+  genderCustom: string,
+  ethnicity: EthnicityVal,
+  ethnicityCustom: string,
+  birthPlace: string,
+  currentPlace: string,
+  nonNative: NonNativeVal
+}
+
 type StateData = {
-  personalInformation: {
-    [key: string]: string,
-    age: AgeVal,
-    gender: GenderVal,
-    genderCustom: string,
-    ethnicity: EthnicityVal,
-    ethnicityCustom: string,
-    birthPlace: string,
-    currentPlace: string,
-    nonNative: NonNativeVal
-  },
+  personalInformation: PersonalInformation,
   canvas?: CanvasData[],
   group: paper.Group,
   email: string
@@ -168,6 +112,7 @@ class Admin extends React.Component<{}, AdminState> {
   mkPathGroup = (data: OriginalCanvasData[], index: number) => {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value) => {
       const _path = mkPath(value.path, index);
+      // _path.scale((1/1076)*(905), (1/748)*(748));
       const _text = mkPathLabel(value.form.name, _path);
       return [
         ...group,
@@ -182,9 +127,9 @@ class Admin extends React.Component<{}, AdminState> {
   componentDidMount = () => {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
-
+    canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
-      const _data = response.data.map((result, index) => {
+    const _data = response.data.map((result, index) => {
         return {
           ...result,
           canvas: undefined,
@@ -200,12 +145,12 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   applyFilters = (filters: Filters) => {
-    const keys = Object.keys(filters);
-    const result = this.state.original.filter(
+    const results = this.state.original.filter(
       result => {
-        const matches = keys.map(k => {
-          if ( k !== 'nonNative') {
-            return !isNil(filters[k].find(equals(result.personalInformation[k])))
+        const matches = VALUES.FILTER_KEYS.map(filterKey => {
+          const appliedFilter = filters[filterKey];
+          if (appliedFilter) {
+            return !isNil(filters[filterKey]?.find(equals<string>(result.personalInformation[filterKey])))
           } else {
             return true;
           }
@@ -220,9 +165,8 @@ class Admin extends React.Component<{}, AdminState> {
       }
     )
     this.setState({
-      data: result
+      data: results
     })
-    console.log("filter, original", result, this.state.original);
   }
 
   render() {
@@ -246,96 +190,169 @@ class Admin extends React.Component<{}, AdminState> {
   }
 }
 
-type Filters = {
-  [filter: string]: string[],
-  age: AgeVal[],
-  gender: GenderVal[],
-  ethnicity: EthnicityVal[],
-  nonNative: NonNativeVal[]
-}
-
 const FilterPanel: React.FunctionComponent<{
   applyFilters: (filters: Filters) => void
 }> = ({ applyFilters }) => {
-  const [filters, setFilters] = useState<Filters>({
-    age: [ '1', '2', '3', '4', '5', '6' ],
-    gender: [ 'female', 'male', 'other'],
-    ethnicity: [...ETHNICITY],
-    nonNative: ['1', '2', '3', '4']
+
+  const [filters, setFilters] = useState<Filters>({ 
+    ...VALUES.FILTER,
+    nonNative: undefined
+  });
+  const [activeFilters, setActiveFilters] = useState<FilterStatus>({
+    age: true,
+    ethnicity: true,
+    gender: true,
+    nonNative: false
   });
 
-  const isChecked = (field: string, value: string) => {
-    return !!filters[field].find(equals(value));
+  const isFilterActive = (field: FilterVal) => {
+    return activeFilters[field]
+  };
+
+  const activateFilter = (field: FilterVal) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    const _filters = {
+      ...activeFilters,
+      [field]: target.checked
+    }
+    
+    if (target.checked) {
+      handleFilter({
+        ...filters,
+        [field]: VALUES.FILTER[field]
+      });
+    } else {
+      handleFilter({
+        ...filters,
+        [field]: undefined
+      })
+    }
+    setActiveFilters(_filters);
   }
 
-  const handleCheck = (field: string, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+  const selectAll = () => {
+    
+  }
+
+  const isChecked = (field: FilterVal, value: string) => {
+    const values = filters[field];
+    if (values){
+      return includes(value, values);
+    } else {
+      return false
+    }
+  }
+
+  const handleCheck = (field: FilterVal, value: string) => ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const _filters = {
       ...filters,
-      [field]: target.checked ? append(value, filters[field]) : without([ value ], filters[field])
+      [field]: target.checked ? append(value, filters[field] || []) : without([ value ], filters[field] || [])
     };
+    handleFilter(_filters)
+  }
+
+  const handleFilter = (_filters: Filters) => {
     applyFilters(_filters);
     setFilters(_filters)
   }
 
   return (
     <div id="vom-results-filters">
-      <h4>Filters</h4>
-      <h6>Age</h6>
-      <FormGroup className="vom-filter-group">
-        {
-          Object.keys(AGE_MAP).map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{AGE_MAP[value]}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+      <h4>
+        Filters
+        <div id="vom-filter-actions">
+          <Button outline size="sm" color="secondary" onClick={selectAll}>Select all</Button>  
+          <Button outline size="sm" color="secondary" onClick={() => handleFilter({ ...VALUES.CLEAN_FILTER })} disabled>Clear all</Button>  
+        </div>
+      </h4>
 
-      <h6>Gender</h6>
-      <FormGroup className="vom-filter-group">
-        {
-          GENDER.map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+      <Switch id="age-switch" checked={isFilterActive('age')} onChange={activateFilter('age')}>
+        <h6>
+          Age
+        </h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('age')}>
+        <FormGroup className="vom-filter-group">
+            {
+              (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
+                <FormGroup check inline key={value}>
+                  <Label check>
+                    <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
+                  </Label>
+                </FormGroup>
+              ))
+            }
+        </FormGroup>
+      </Collapse>
 
-      <h6>ethnicity</h6>
-      <FormGroup className="vom-filter-group">
-        {
-          ETHNICITY.map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+      <hr></hr>
 
-      <h6>
-        Non natives
-      </h6>
-      <FormGroup className="vom-filter-group">
-        {
-          Object.keys(NON_NATIVE_MAP).map(value => (
-            <FormGroup check inline key={value}>
-              <Label check>
-                <Input type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{NON_NATIVE_MAP[value]}
-              </Label>
-            </FormGroup>
-          ))
-        }
-      </FormGroup>
+      <Switch id="gender-switch" checked={isFilterActive('gender')} onChange={activateFilter('gender')}>
+        <h6>Gender</h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('gender')}>
+        <FormGroup className="vom-filter-group">
+          {
+            VALUES.GENDER.map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('gender')} type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
+
+      <hr/>
+
+      <Switch id="ethnicity-switch" checked={isFilterActive('ethnicity')} onChange={activateFilter('ethnicity')}>
+        <h6>ethnicity</h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('ethnicity')}>
+        <FormGroup className="vom-filter-group">
+          {
+            VALUES.ETHNICITY.map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('ethnicity')} type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
+      <hr/>
+      
+      <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>
+        <h6> Non natives </h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('nonNative')}>
+        <FormGroup className="vom-filter-group">
+          {
+            (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('nonNative')} type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
 
     </div>
   )
 }
+
+const Switch: React.FunctionComponent<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>> = ({ id, children , ...props}) => {
+  return (
+    <div className="custom-control custom-switch">
+      <input type="checkbox" className="custom-control-input" id={id} {...props} />
+      <label className="custom-control-label" htmlFor={id}>
+        { children }
+      </label>
+    </div>
+  )
+};
 
 export default Admin;
