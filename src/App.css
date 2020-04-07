@@ -27,6 +27,12 @@
   padding: 2rem;
 }
 
+@media only screen and (max-width : 500px) { 
+  .App .container {
+    padding: 0.5rem!important;
+  }
+}
+
 .App section {
   display: flex;
   flex-direction: column;
@@ -68,10 +74,9 @@ form button {
 #magic-canvas,
 #vom-admin-canvas {
   width: 100%;
-  height: 80vh;
   background-color: #F2F2F2;
-  background-image: url('merseyside-nobg.png');
-  background-position: center center;
+  background-image: url('merseyside-nobg-4_5-LABELED.png');
+  background-position: top left;
   background-size: contain;
   background-repeat: no-repeat;
 }
