@@ -53,6 +53,10 @@ const FinishSection: React.FunctionComponent = () => {
 type AnswersData = {
   personalInformation: FormData,
   canvas: CanvasData[],
+  canvasSize: {
+    width: number,
+    height: number,
+  },
   email: string,
 };
 
@@ -72,6 +76,10 @@ const App = () => {
       nonNative: '',
     },
     canvas: [],
+    canvasSize: {
+      width: 0,
+      height: 0
+    },
     email: ''
   });
   const changePage = () => {
@@ -85,6 +93,7 @@ const App = () => {
         form: data.form,
         path: data.path.exportJSON()
       })),
+      canvasSize: answers.canvasSize,
       email: answers.email
     };
     const postRequest = new XMLHttpRequest();
@@ -113,7 +122,8 @@ const App = () => {
       saveData: (data) => {
         saveAnswers({
           ...answers,
-          canvas: data
+          canvas: data.data,
+          canvasSize: data.canvas
         });
         changePage()
       }

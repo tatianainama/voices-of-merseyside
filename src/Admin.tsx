@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
-import Paper, { Path, PaperScope, Group, Color } from 'paper';
+import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
 import { equals, without, append, isNil, identity, includes } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
@@ -17,6 +17,10 @@ type Result = {
     nonNative: NonNativeVal
   },
   canvas: OriginalCanvasData[],
+  canvasSize: {
+    width: number,
+    height: number
+  },
   email: string
 }
 
@@ -109,9 +113,10 @@ class Admin extends React.Component<{}, AdminState> {
     };
   }
 
-  mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope) => {
+  mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope, originalCanvas: { width: number, height: number}) => {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value) => {
       const _path = mkPath(value.path, index);
+      _path.scale(canvas.view.viewSize.width / originalCanvas.width, new Point(0, 0));
       const _text = mkPathLabel(value.form.name, _path);
       return [
         ...group,
@@ -128,11 +133,11 @@ class Admin extends React.Component<{}, AdminState> {
     canvas.setup('vom-admin-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
-    const _data = response.data.map((result, index) => {
+      const _data = response.data.map((result, index) => {
         return {
           ...result,
           canvas: undefined,
-          group: this.mkPathGroup(result.canvas, index, canvas)
+          group: this.mkPathGroup(result.canvas, index, canvas, result.canvasSize),
         };
       })
       this.setState({

@@ -74,7 +74,13 @@ type CanvasState = {
 };
 
 type CanvasProps = {
-  saveData: (data: CanvasData[] | any) => void,
+  saveData: (data: {
+    data: CanvasData[],
+    canvas: {
+      width: number,
+      height: number
+    }
+  }) => void,
   showHelp: () => void,
 };
 
@@ -464,7 +470,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         <Button
           color="primary"
           onClick={() => {
-            this.props.saveData(this.state.data)
+            this.props.saveData({
+              data: this.state.data,
+              canvas: this.state.canvas
+            })
           }}
           disabled={this.state.current === 0}
         >Finished</Button>
@@ -482,7 +491,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
           </ModalBody>
           <ModalFooter>
             <Button onClick={() => this.toggleEditMode(true)} color="success" outline>Edit drawings</Button>
-            <Button onClick={() => this.props.saveData(this.state.data)} color="primary">Finished</Button>
+            <Button onClick={() => this.props.saveData({
+              data: this.state.data,
+              canvas: this.state.canvas
+            })} color="primary">Finished</Button>
           </ModalFooter>
         </Modal>
       </>
@@ -493,7 +505,13 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
 
 
 export const DrawCanvas: React.FunctionComponent<{
-  saveData: (data: CanvasData[]) => void
+  saveData: (data: {
+    data: CanvasData[],
+    canvas: {
+      width: number,
+      height: number
+    }
+  }) => void
 }> = ({ saveData }) => {
   const [showInstructions, setShowInstructions] = useState(true)
   return (
