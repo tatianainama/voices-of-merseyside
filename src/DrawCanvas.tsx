@@ -464,14 +464,6 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         <Button
           color="primary"
           onClick={() => {
-            const _data = this.state.data.map(item => {
-              const _path = item.path.clone({insert: false});
-              _path.scale(1/this.state.canvas.width, 1/this.state.canvas.height);
-              return {
-                ...item,
-                path: _path
-              }
-            });
             this.props.saveData(this.state.data)
           }}
           disabled={this.state.current === 0}
