@@ -9,7 +9,7 @@ from flask_restful import Api
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/david/tanya.db'
     db.init_app(app)
 
     api = Api(app)
