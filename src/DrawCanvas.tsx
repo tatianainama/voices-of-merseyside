@@ -4,7 +4,7 @@ import Paper, { Path, PaperScope } from 'paper';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { remove, update, difference } from 'ramda';
+import { remove, update, difference, path } from 'ramda';
 
 const COLORS = [
   '#ffc6bc',
@@ -59,6 +59,10 @@ export type CanvasData = {
 };
 
 type CanvasState = {
+  canvas: {
+    height: number,
+    width: number
+  },
   data: CanvasData[],
   current: number,
   openModal: boolean,
@@ -70,7 +74,7 @@ type CanvasState = {
 };
 
 type CanvasProps = {
-  saveData: (data: CanvasData[]) => void,
+  saveData: (data: CanvasData[] | any) => void,
   showHelp: () => void,
 };
 
@@ -194,7 +198,11 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
       editTool: undefined,
       pathSelected: undefined,
       _path: undefined,
-      editMode: false
+      editMode: false,
+      canvas: {
+        height: 0,
+        width: 0
+      }
     }
   }
 
@@ -398,6 +406,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     this.setState({
       drawTool: this.mkDrawTool(),
       editTool: this.mkEditTool(),
+      canvas: {
+        height: canvas.view.size.height,
+        width: canvas.view.size.width
+      }
     })
   }
 
@@ -451,7 +463,17 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         <canvas id="magic-canvas" className='mb-4 rounded'/>
         <Button
           color="primary"
-          onClick={() => this.props.saveData(this.state.data)}
+          onClick={() => {
+            const _data = this.state.data.map(item => {
+              const _path = item.path.clone({insert: false});
+              _path.scale(1/this.state.canvas.width, 1/this.state.canvas.height);
+              return {
+                ...item,
+                path: _path
+              }
+            });
+            this.props.saveData(_data)
+          }}
           disabled={this.state.current === 0}
         >Finished</Button>
         <Modal isOpen={this.state.openModal}>
