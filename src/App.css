@@ -74,6 +74,18 @@ form button {
   margin-bottom: 0!important;
 }
 
+#vom-associations-list {
+  display: flex; 
+}
+
+.vom-remove-association {
+  padding: 0;
+  border: 0;
+  color: #F2F2F2;
+  font-size: 0.7rem;
+  line-height: 1rem;
+}
+
 #magic-canvas,
 #vom-admin-canvas {
   width: 100%;

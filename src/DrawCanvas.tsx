@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path, PaperScope } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback, InputGroup, InputGroupAddon } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { remove, update, difference, path } from 'ramda';
+import { faTrashAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { remove, update, difference } from 'ramda';
 
 const COLORS = [
   '#ffc6bc',
@@ -87,7 +87,7 @@ type CanvasProps = {
 type FormData = {
   name: string,
   soundExample: string,
-  associations: string,
+  associations: string[],
 };
 
 type PathQuestionFormState = {
@@ -97,19 +97,78 @@ type PathQuestionFormState = {
   }
 }
 
+const Associations: React.FunctionComponent<{ 
+  initialValue: string[],
+  saveAssociations: (list: string[]) => void,
+  id: string,
+  valid?: boolean,
+  invalid?: boolean,
+}> = 
+({ saveAssociations, initialValue, id, valid, invalid }) => {
+  const [ associations, setAssociations ] = useState<string[]>(initialValue);
+  const [ newValue, setNewValue ] = useState<string>('');
+
+  useEffect(() => {
+    setAssociations(initialValue);
+  }, [initialValue])
+
+  const maxAssociationsReached = () => associations.length >= 5;
+
+  const updateAssociations = (newAssociations: string[]) => {
+    setAssociations(newAssociations);
+    saveAssociations(newAssociations);
+  }
+
+  return (
+    <div id="vom-associations">
+      <FormGroup>
+        <InputGroup>
+          <Input value={newValue} onChange={(e) => setNewValue(e.target.value)} disabled={maxAssociationsReached()} id={id} valid={valid} invalid={invalid}/>
+          <InputGroupAddon addonType="append">
+            <Button 
+              onClick={() => {
+                updateAssociations([...associations, newValue]);
+                setNewValue('')
+              }}
+              disabled={maxAssociationsReached()}
+            >Add</Button>
+          </InputGroupAddon>
+        <FormFeedback>At least one association is required</FormFeedback>
+        </InputGroup>
+      </FormGroup>
+      {
+        associations.length ? (
+          <div className="vom-associations-list mt-1">
+            {
+              associations.map((association, key) => (
+              <Badge color="secondary" key={key} className="vom-associations-value mr-1 mb-1">
+                {association}
+                <Button className="vom-remove-association p-1" color="link" onClick={() => updateAssociations(remove(key, 1, associations))}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </Button>
+              </Badge>
+              ))
+            }
+          </div>
+        ) : null
+      }
+    </div>
+  )
+}
+
 const PathQuestions: React.FunctionComponent<{
   saveData: (data: FormData, editing?: boolean) => void,
   cancel: () => void,
   initialData?: {
     name: string,
     soundExample: string,
-    associations: string,
+    associations: string[],
   }
 }> = ({ saveData, cancel, initialData }) => {
   const [ data, setData ] = useState<FormData>({
     name: '',
     soundExample: '',
-    associations: '',
+    associations: [],
   });
 
   const [ form, setFormState ] = useState<PathQuestionFormState>({
@@ -134,6 +193,13 @@ const PathQuestions: React.FunctionComponent<{
     });
   }
 
+  const saveAssociations = (associations: string[]) => {
+    setData({
+      ...data,
+      associations,
+    })
+  }
+
   const setInputValidation = (field: keyof FormData): undefined | { valid: true } | { invalid: true } => {
     if (!form.submitted) {
       return undefined;
@@ -151,7 +217,7 @@ const PathQuestions: React.FunctionComponent<{
       validation: {
         name: data.name !== '',
         soundExample: data.soundExample !== '',
-        associations: data.associations !== ''
+        associations: data.associations.length !== 0
       }
     }
     setFormState(_form);
@@ -176,9 +242,9 @@ const PathQuestions: React.FunctionComponent<{
 
           <FormGroup>
             <Label for="path-associations">Please provide any associations (ideas, judgements, opinions, etc.) that come to mind when you encounter this accent/a speaker with this accent</Label>
-            <Input type="text" id="path-associations" value={data.associations} onChange={handleChange('associations')} {...setInputValidation('associations')}/>
-            <FormFeedback>Please, fill up this input</FormFeedback>
+            <Associations id="path-associations" initialValue={data.associations} saveAssociations={saveAssociations} {...setInputValidation('associations')}></Associations>
           </FormGroup>
+
         </Form> 
       </ModalBody>
       <ModalFooter>
@@ -222,7 +288,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         _path: {
           form: {
             name: '',
-            associations: '',
+            associations: [],
             soundExample: '',
           },
           path: mkPath(color, event.point),
