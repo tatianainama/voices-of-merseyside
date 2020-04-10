@@ -85,9 +85,15 @@ type CanvasProps = {
 };
 
 type FormData = {
-  name: string,
-  soundExample: string,
-  associations: string[],
+  [key: string]: any } &
+  {
+    name: string,
+    soundExample: string,
+    associations: string[],
+    correctness: number,
+    pleasantness: number,
+    trustworthiness: number,
+    friendliness: number
 };
 
 type PathQuestionFormState = {
@@ -156,20 +162,69 @@ const Associations: React.FunctionComponent<{
   )
 }
 
+const Slider: React.FunctionComponent<{
+  label: string,
+  onChange: (selection: number) => void,
+  initialValue: number,
+  valid?: boolean,
+  invalid?: boolean,
+}> = ({label, onChange, initialValue, valid, invalid}) => {
+  const values = [ 1, 2, 3, 4, 5];
+  const [ selection, setSelection ] = useState(initialValue);
+
+  useEffect(() => {
+    setSelection(initialValue)
+  }, [initialValue]);
+
+  const update = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    const result = parseInt(target.value);
+    setSelection(result);
+    onChange(result)
+  }
+  
+  return (
+    <>
+      <label className={`vom-rating-label ${invalid ? 'is-invalid' : ''} ${valid ? 'is-valid' : ''}`}>{ label }</label>
+      {
+        values.map(value => (
+          <FormGroup key={value} className="vom-rating-value" check>
+            <Label for={`${label}-${value}`} check className={`${invalid ? 'is-invalid' : ''} ${valid ? 'is-valid' : ''}`} >
+              <Input
+                type="radio" 
+                name={`radio-${label}`} 
+                id={`${label}-${value}`} 
+                value={value} 
+                onChange={update} 
+                checked={value === selection}
+                valid={valid}
+                invalid={invalid}
+              />{' '}
+              {value}
+            </Label>
+            {/* <input type="radio" value={value} onChange={update} checked={value === selection} name={`radio-${label}`} id={`${label}-${value}`} /> */}
+          </FormGroup>
+        ))
+      }
+    </>
+  )
+}
+
 const PathQuestions: React.FunctionComponent<{
   saveData: (data: FormData, editing?: boolean) => void,
   cancel: () => void,
-  initialData?: {
-    name: string,
-    soundExample: string,
-    associations: string[],
-  }
+  initialData?: FormData
 }> = ({ saveData, cancel, initialData }) => {
   const [ data, setData ] = useState<FormData>({
     name: '',
     soundExample: '',
     associations: [],
+    correctness: 0,
+    friendliness: 0,
+    pleasantness: 0,
+    trustworthiness: 0
   });
+
+  const SLIDER = ['correctness', 'friendliness', 'pleasantness', 'trustworthiness'];
 
   const [ form, setFormState ] = useState<PathQuestionFormState>({
     submitted: false,
@@ -177,6 +232,10 @@ const PathQuestions: React.FunctionComponent<{
       name: false,
       soundExample: false,
       associations: false,
+      correctness: false,
+      friendliness: false,
+      pleasantness: false,
+      trustworthiness: false
     }
   });
 
@@ -200,6 +259,13 @@ const PathQuestions: React.FunctionComponent<{
     })
   }
 
+  const setScale = (scale: keyof FormData) => (value: number) => {
+    setData({
+      ...data,
+      [scale]: value
+    })
+  }
+
   const setInputValidation = (field: keyof FormData): undefined | { valid: true } | { invalid: true } => {
     if (!form.submitted) {
       return undefined;
@@ -217,7 +283,11 @@ const PathQuestions: React.FunctionComponent<{
       validation: {
         name: data.name !== '',
         soundExample: data.soundExample !== '',
-        associations: data.associations.length !== 0
+        associations: data.associations.length !== 0,
+        correctness: data.correctness !== 0,
+        friendliness: data.friendliness !== 0,
+        pleasantness: data.pleasantness !== 0,
+        trustworthiness: data.trustworthiness !== 0
       }
     }
     setFormState(_form);
@@ -245,6 +315,34 @@ const PathQuestions: React.FunctionComponent<{
             <Associations id="path-associations" initialValue={data.associations} saveAssociations={saveAssociations} {...setInputValidation('associations')}></Associations>
           </FormGroup>
 
+          <FormGroup>
+            <Label for="rate-area">How would you rate the speech of this area along the following scales?</Label>
+            <div className="vom-rating">
+              <div></div>
+              <div>least</div>
+              <div className="vom-rating-arrow-container">
+                <div className="vom-rating-arrow"></div>
+              </div>
+              <div>most</div>
+            {
+              SLIDER.map(scale => (
+                <Slider
+                  key={scale}
+                  initialValue={data[scale]}
+                  label={scale}
+                  onChange={setScale(scale)}
+                  {...setInputValidation(scale)}
+                />
+              ))
+            }
+            </div>
+            {
+              form.submitted && !(form.validation.correctness || form.validation.friendliness || form.validation.pleasantness || form.validation.trustworthiness) &&
+              (<div className="is-invalid invalid-feedback">
+                Please, select on option for each category
+              </div>)
+            }
+          </FormGroup>
         </Form> 
       </ModalBody>
       <ModalFooter>
@@ -288,8 +386,12 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
         _path: {
           form: {
             name: '',
-            associations: [],
+            associations: [''],
             soundExample: '',
+            correctness: 0,
+            friendliness: 0,
+            pleasantness: 0,
+            trustworthiness: 0
           },
           path: mkPath(color, event.point),
           text: mkText(color)
