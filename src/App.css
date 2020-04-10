@@ -74,6 +74,10 @@ form button {
   margin-bottom: 0!important;
 }
 
+#vom-intro p,
+#vom-terms p {
+  text-align: justify;
+}
 #vom-associations-list {
   display: flex; 
 }
