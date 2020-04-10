@@ -132,7 +132,8 @@ class Admin extends React.Component<{}, AdminState> {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
-    Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
+    Axios.get<Result[]>('/backend/').then(response => {
+    // Axios.get<Result[]>('http://127.0.0.1/backend/').then(response => {
       const _data = response.data.map((result, index) => {
         return {
           ...result,

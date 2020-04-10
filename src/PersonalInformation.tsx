@@ -223,8 +223,8 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
         </FormGroup>
 
         <FormGroup>
-          <Label for="post-code">Current place of residence</Label>
-          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') } placeholder="(postcode area, e.g: CH48)"/>
+          <Label for="post-code">Current place of residence (please provide area code)</Label>
+          <Input id="post-code" type="text" value={values.currentPlace} onChange={handleSelect('currentPlace')} { ...setInputValidation('currentPlace') } placeholder="(e.g: CH48)"/>
           <FormFeedback>Please, fill up this input</FormFeedback>
         </FormGroup>
 

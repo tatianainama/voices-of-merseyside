@@ -21,7 +21,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
       <h4>Online Mapping</h4>
       <p>
         A speaker’s accent or dialect is closely tied to their sense of identity and community. Using a
-        purposefully designed online tool and Geofencing technology, we hope to gain valuable insights into
+        purposefully designed online tool and geofencing technology, we hope to gain valuable insights into
         the linguistic landscape of Merseyside and contribute to the wider field of perceptual dialectology.
         To gather data, residents of Merseyside are asked to draw a digital map of where they believe
         different accents or dialects in Merseyside to be found. Then, residents will be asked to label the
