@@ -14,7 +14,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
     <div className="mb-4">
       <h4>About</h4>
       <p className="">
-        This project seeks to explore the rich and diverse accents, dialects and identities of Merseyside.
+        This project seeks to explore the rich and diverse accents, dialects, and identities of Merseyside.
       </p>
     </div>
     <div className="mb-5">
