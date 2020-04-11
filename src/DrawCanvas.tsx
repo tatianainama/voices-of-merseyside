@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Paper, { Path, PaperScope } from 'paper';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback, InputGroup, InputGroupAddon } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, Fade, ModalHeader, ButtonGroup, Badge, FormFeedback, InputGroup, InputGroupAddon, FormText } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { remove, update, difference } from 'ramda';
@@ -311,7 +311,12 @@ const PathQuestions: React.FunctionComponent<{
           </FormGroup>
 
           <FormGroup>
-            <Label for="path-associations">Please provide any associations (ideas, judgements, opinions, etc.) that come to mind when you encounter this accent/a speaker with this accent</Label>
+            <Label for="path-associations">
+              Please provide any associations (ideas, judgements, opinions, etc.) that come to mind when you encounter this accent/a speaker with this accent
+              <FormText color="muted">
+                Please press the 'Add' button after each association
+              </FormText>
+            </Label>
             <Associations id="path-associations" initialValue={data.associations} saveAssociations={saveAssociations} {...setInputValidation('associations')}></Associations>
           </FormGroup>
 

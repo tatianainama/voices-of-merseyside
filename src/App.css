@@ -31,6 +31,9 @@
   .App .container {
     padding: 0.5rem!important;
   }
+  .vom-rating-arrow {
+    border-width: 0.5rem 6rem 0px 0!important;
+  }
 }
 
 .App section {
