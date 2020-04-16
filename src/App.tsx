@@ -100,7 +100,7 @@ type AnswersData = {
 
 const PAGES = [0, 1, 2, 3, 4];
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(2);
+  const [ currentPage, setCurrentPage ] = useState(0);
   const [ exit, setExit ] = useState(false);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
