@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import App from './App';
 import Admin from './Admin';
+import ConsentInformation from './Consent';
 
 import './App.css';
 
@@ -19,6 +20,9 @@ export const AppRouting = () => {
           </Route>
           <Route path="/admin">
             <Admin></Admin>
+          </Route>
+          <Route path="/terms">
+            <ConsentInformation/>
           </Route>
         </Switch>
       </div>

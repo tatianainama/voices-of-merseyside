@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstrap';
-
+import { Link } from 'react-router-dom';
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
 import FollowUp from './FollowUp';
@@ -68,7 +68,9 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
           unless I choose to be contacted by the researcher) to be shared with other academics, if the
           researcher so chooses.
           </p>
-          
+          <p>
+            To read the terms and conditions specified by the Universiteit van Amsterdam, please click the following <Link to="/terms">link</Link>
+          </p>
         </div>
         <FormGroup className="mb-4" check>
           <Input type="checkbox" id="vom-terms-check" checked={agreement} onChange={ e => setAgreement(e.target.checked)}/>

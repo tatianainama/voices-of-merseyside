@@ -231,3 +231,10 @@ form button {
   padding-right: 1rem;
 }
 
+.uva-terms li {
+  flex-basis: 30%;
+}
+
+.uva-terms li img {
+  width: 100%;
+}
