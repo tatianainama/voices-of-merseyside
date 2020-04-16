@@ -83,7 +83,13 @@ const ConsentInformation: React.FunctionComponent = () => {
           </address>
         </p>
         <p>
-        If you have any complaints regarding this research project, you can contact the secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam, <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a>,  phone number: +31 20 - 525 3054; Kloveniersburgwal 48, 1012 CX Amsterdam.
+          If you have any complaints regarding this research project, you can contact the<br/>
+          <address>
+            Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
+            <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
+            <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
+            Kloveniersburgwal 48, 1012 CX Amsterdam.
+          </address>
         </p>
 
         <Link to="/">
