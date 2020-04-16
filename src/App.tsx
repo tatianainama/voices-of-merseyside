@@ -72,7 +72,7 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
         </div>
         <FormGroup className="mb-4" check>
           <Input type="checkbox" id="vom-terms-check" checked={agreement} onChange={ e => setAgreement(e.target.checked)}/>
-          <Label for="vom-terms-check" check>I give my permission to participate in this research/project.</Label>
+          <Label for="vom-terms-check" check>I give my permission to participate in this research project.</Label>
         </FormGroup>
         <Button type="button" disabled={!agreement} color={agreement ? 'info' : 'secondary'}  onClick={ () => changePage() }>Next</Button>
       </Form>
