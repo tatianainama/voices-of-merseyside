@@ -92,6 +92,43 @@ const ConsentInformation: React.FunctionComponent = () => {
           </address>
         </p>
 
+        <div className="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+          <h5>Informed consent form</h5>
+        </div>
+
+        <p>
+          I hereby declare that I have been clearly informed about the research project Voices of Merseyside at the University of Amsterdam, Linguistics department, conducted by Tanya Parry - MA student under supervision of Margreet Dorleijn – lecturer as described in the information brochure. My questions have been answered to my satisfaction.
+        </p>
+
+        <p>
+          I consent to participate in this research on an entirely voluntary basis. I understand that due to the anonymous nature of this research, I am unable to retract my responses once I have submitted the survey. If I choose to participate in a follow-up survey, I will provide my email address.
+        </p>
+
+        <p>
+        If my research results are used in scientific publications or made public in any other way, they will be fully anonymised. My personal information may not be viewed by third parties without my express permission. 
+        </p>
+
+        <p>
+        If I need any further information on the research, now or in the future, I can contact <br/>
+          <address>
+            Margreet Dorleijn<br/>
+            <abbr title="Phone">Phone number:</abbr> +31 20 - 5252196<br/>
+            <abbr title="Email">Email:</abbr> <a href="mailto:m.dorleijn@uva.nl">M.Dorleijn@uva.nl</a><br/>
+            Spuistraat 134, 1012VB Amsterdam, room 639
+          </address> 
+        </p>
+
+        <p>
+          If I have any complaints regarding this research, I can contact the<br/>
+          <address>
+            Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
+            <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
+            <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
+            Kloveniersburgwal 48, 1012 CX Amsterdam.
+          </address>
+        </p>
+
+
         <Link to="/">
           <Button>Return to the survey</Button>
         </Link>
