@@ -35,13 +35,13 @@ const ConsentInformation: React.FunctionComponent = () => {
         <p>This is an online survey, meaning that you can participate in this research from the comfort of your own home.</p>
         <p>
           You click the link to the data collection website www.voicesofmerseyside.org. Initially the website will present an explanation of the study and the data collection tool, once you have finished reading the explanation you may click ‘Let’s start!’ which will take you directly to the ‘Terms of agreement’. Here, you must read these terms and click ‘I give my permission to participate in the research’. From there, you will be asked to provide some background information, however this research is anonymous (unless you agree to be contacted by the researcher for a follow-up interview) meaning that your personal information, such as name or address, are not required. Please note, you are unable to progress onto the next phase of the study if you have not filled out the background information section. Once completed you click ‘Next’, and a screen with instructions for the mapping phase of the study will pop-up:
-          <ol>
-            <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside.</li>
-            <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that come to mind when you encounter this accent/a speaker with this accent.</li>
-            <li>You are free to edit your map using the edit function.</li>
-            <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not be possible to make changes after your map has been submitted.</li>
-          </ol>
         </p>
+        <ol>
+          <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside.</li>
+          <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that come to mind when you encounter this accent/a speaker with this accent.</li>
+          <li>You are free to edit your map using the edit function.</li>
+          <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not be possible to make changes after your map has been submitted.</li>
+        </ol>
         <p>
           Once you have finished your map and answered the associated questions, you click ‘Submit’. You will then be asked to provide your email address if you are willing to be contacted by the researcher. This is entirely optional. After which you click ‘Finish’. The survey is now complete. The amount of time required for completion of this study varies depending on how may accent boundaries you identify, but it is estimated to take between 15 to 30 minutes to complete.
         </p>
@@ -75,22 +75,22 @@ const ConsentInformation: React.FunctionComponent = () => {
         <h6><strong>Further information</strong></h6>
         <p>
           For further information on the research project, please contact:
-          <address>
-            Margreet Dorleijn<br/>
-            <abbr title="Phone">Phone number:</abbr> +31 20 - 5252196<br/>
-            <abbr title="Email">Email:</abbr> <a href="mailto:m.dorleijn@uva.nl">M.Dorleijn@uva.nl</a><br/>
-            Spuistraat 134, 1012VB Amsterdam, room 639
-          </address>
         </p>
+        <address>
+          Margreet Dorleijn<br/>
+          <abbr title="Phone">Phone number:</abbr> +31 20 - 5252196<br/>
+          <abbr title="Email">Email:</abbr> <a href="mailto:m.dorleijn@uva.nl">M.Dorleijn@uva.nl</a><br/>
+          Spuistraat 134, 1012VB Amsterdam, room 639
+        </address>
         <p>
           If you have any complaints regarding this research project, you can contact the<br/>
-          <address>
-            Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
-            <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
-            <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
-            Kloveniersburgwal 48, 1012 CX Amsterdam.
-          </address>
         </p>
+        <address>
+          Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
+          <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
+          <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
+          Kloveniersburgwal 48, 1012 CX Amsterdam.
+        </address>
 
         <div className="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
           <h5>Informed consent form</h5>
@@ -109,28 +109,28 @@ const ConsentInformation: React.FunctionComponent = () => {
         </p>
 
         <p>
-        If I need any further information on the research, now or in the future, I can contact <br/>
-          <address>
-            Margreet Dorleijn<br/>
-            <abbr title="Phone">Phone number:</abbr> +31 20 - 5252196<br/>
-            <abbr title="Email">Email:</abbr> <a href="mailto:m.dorleijn@uva.nl">M.Dorleijn@uva.nl</a><br/>
-            Spuistraat 134, 1012VB Amsterdam, room 639
-          </address> 
+          If I need any further information on the research, now or in the future, I can contact <br/>
         </p>
+        <address>
+          Margreet Dorleijn<br/>
+          <abbr title="Phone">Phone number:</abbr> +31 20 - 5252196<br/>
+          <abbr title="Email">Email:</abbr> <a href="mailto:m.dorleijn@uva.nl">M.Dorleijn@uva.nl</a><br/>
+          Spuistraat 134, 1012VB Amsterdam, room 639
+        </address> 
 
         <p>
           If I have any complaints regarding this research, I can contact the<br/>
-          <address>
-            Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
-            <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
-            <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
-            Kloveniersburgwal 48, 1012 CX Amsterdam.
-          </address>
         </p>
+        <address>
+          Secretary of the Ethics Committee of the Faculty of Humanities of the University of Amsterdam <br/>
+          <abbr title="Phone">Phone number:</abbr> +31 20 - 525 3054<br/>
+          <abbr title="Email">Email:</abbr> <a href="mailto:commissie-ethiek-fgw@uva.nl">commissie-ethiek-fgw@uva.nl</a><br/>
+          Kloveniersburgwal 48, 1012 CX Amsterdam.
+        </address>
 
 
         <Link to="/">
-          <Button>Return to the survey</Button>
+          <Button className="mb-3">Return to the survey</Button>
         </Link>
       </Container>
     </div>
