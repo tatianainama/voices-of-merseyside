@@ -12,6 +12,7 @@ import {
   FormFeedback,
   Fade
 } from 'reactstrap';
+import { isEmpty, without, concat } from 'ramda';
 
 export type FormData = {
   age: string,
@@ -19,6 +20,7 @@ export type FormData = {
   genderCustom: string,
   ethnicity: string,
   ethnicityCustom: string,
+  levelEducation: string[],
   birthPlace: string,
   currentPlace: string,
   nonNative: string
@@ -44,12 +46,15 @@ const notEmptyCustomResponse = (customValue: string, fixedResponse: string) => {
   return true;
 };
 
+const atLeastOne = (selection: string[]) => !isEmpty(selection);
+
 const validateData = (values: FormData): Validations => ({
   age: notEmpty(values.age),
   gender: notEmpty(values.gender),
   genderCustom: notEmptyCustomResponse(values.genderCustom, values.gender),
   ethnicity: notEmpty(values.ethnicity),
   ethnicityCustom: notEmptyCustomResponse(values.ethnicityCustom, values.ethnicity),
+  levelEducation: atLeastOne(values.levelEducation),
   birthPlace: notEmpty(values.birthPlace),
   currentPlace: notEmpty(values.currentPlace),
   nonNative: true
@@ -61,6 +66,7 @@ const _initialValidation: Validations = {
   genderCustom: false,
   ethnicity: false,
   ethnicityCustom: false,
+  levelEducation: false,
   birthPlace: false,
   currentPlace: false,
   nonNative: false
@@ -77,6 +83,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     genderCustom: '',
     ethnicity: '',
     ethnicityCustom: '',
+    levelEducation: [],
     birthPlace: '',
     currentPlace: '',
     nonNative: '',
@@ -94,6 +101,17 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
       return { valid: true }
     } else {
       return { invalid: true }
+    }
+  }
+
+  const handleLevelEducation = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValues = {
+      ...values,
+      levelEducation: e.target.checked ? concat([e.target.value], values.levelEducation) : without([e.target.value], values.levelEducation)
+    };
+    setValue(newValues);
+    if (submitted) {
+      saveValidation(validateData(newValues))
     }
   }
 
@@ -142,7 +160,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           { ...setInputValidation('age') }
           >
             <option value="" disabled>Please choose</option>
-            <option value="1">11 - 17</option>
+            <option value="1">16 - 17</option>
             <option value="2">18 - 25</option>
             <option value="3">26 - 45</option>
             <option value="4">46 - 65</option>
@@ -175,7 +193,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           <Label for="ethnicity">
             Ethnicity
             <FormText color="muted">
-              The following options are taken from the 2011 UK Census. You can also define yours selecting the 'None of the above' option.
+              These ethnic groups are taken from the 2011 UK Census. If you feel that these groups do not effectively represent you, please click ‘None of the above’ and add your ethnicity using your own words.
             </FormText>
           </Label>
           <Input type="select" id="ethnicity" value={values.ethnicity} onChange={handleSelect('ethnicity')} { ...setInputValidation('ethnicity') } required>
@@ -214,6 +232,29 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
               </>
             )
           }
+        </FormGroup>
+
+        <FormGroup>
+          <Label for="level-education">Level of education</Label>
+          <FormGroup>
+            <FormGroup check>
+              <Input id="ed-high-school" type="checkbox" value="1" onChange={handleLevelEducation} { ...setInputValidation('levelEducation') }/>
+              <Label for="ed-high-school" check> High school or lower </Label>
+            </FormGroup>
+            <FormGroup check>
+              <Input type="checkbox" id="ed-bachelors" value="2" onChange={handleLevelEducation} { ...setInputValidation('levelEducation') }/>
+              <Label for="ed-bachelors" check> Bachelors </Label>
+            </FormGroup>
+            <FormGroup check>
+              <Input type="checkbox" id="ed-masters" value="3" onChange={handleLevelEducation} { ...setInputValidation('levelEducation') }/>
+              <Label for="ed-masters" check> Masters </Label>
+            </FormGroup>
+            <FormGroup check>
+              <Input type="checkbox" id="ed-doctorate" value="4" onChange={handleLevelEducation} { ...setInputValidation('levelEducation') }/>
+              <Label for="ed-doctorate" check> Doctorate </Label>
+              <FormFeedback>Please, check at least one option</FormFeedback>
+            </FormGroup>
+          </FormGroup>
         </FormGroup>
 
         <FormGroup>

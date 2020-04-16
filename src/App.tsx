@@ -34,7 +34,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
         identity.
       </p>
       <p>
-        We wish to invite all Merseyside residents of varying ages, gender, class and ethnicity to partake in
+        We wish to invite all Merseyside residents of varying ages (16+), gender, class and ethnicity to partake in
         our study and help us to draw a truly representative map of the linguistic landscape of Merseyside,
         as experienced by you, the Voices of Merseyside.
       </p>
@@ -72,7 +72,7 @@ const TermsAndConditions: React.FunctionComponent<SectionComponentProps> = ({ ch
         </div>
         <FormGroup className="mb-4" check>
           <Input type="checkbox" id="vom-terms-check" checked={agreement} onChange={ e => setAgreement(e.target.checked)}/>
-          <Label for="vom-terms-check" check>I give my permission to participate in this research.</Label>
+          <Label for="vom-terms-check" check>I give my permission to participate in this research/project.</Label>
         </FormGroup>
         <Button type="button" disabled={!agreement} color={agreement ? 'info' : 'secondary'}  onClick={ () => changePage() }>Next</Button>
       </Form>
@@ -100,7 +100,7 @@ type AnswersData = {
 
 const PAGES = [0, 1, 2, 3, 4];
 const App = () => {
-  const [ currentPage, setCurrentPage ] = useState(0);
+  const [ currentPage, setCurrentPage ] = useState(2);
   const [ exit, setExit ] = useState(false);
   const [ answers, saveAnswers ] = useState<AnswersData>({
     personalInformation: {
@@ -109,6 +109,7 @@ const App = () => {
       genderCustom: '',
       ethnicity: '',
       ethnicityCustom: '',
+      levelEducation: [],
       birthPlace: '',
       currentPlace: '',
       nonNative: '',

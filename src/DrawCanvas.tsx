@@ -695,8 +695,8 @@ export const DrawCanvas: React.FunctionComponent<{
         </ModalHeader>
         <ModalBody>
           <ol>
-            <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside.</li>
-            <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that come to mind when you encounter this accent/a speaker with this accent.</li>
+            <li>Please draw a shape around an area where you think a certain accent or dialect is spoken in Merseyside. <b>Please be as precise as possible.</b></li>
+            <li>Please name the accent, give an example of how it sounds, write down any associations (ideas, judgements, opinions etc.) that <b>immediately</b> come to mind when you encounter this accent/a speaker with this accent.</li>
             <li>You are free to edit your map using the edit function.</li>
             <li>Repeat stages 1 and 2 until you have finished your map. Once you have finished, click ‘finished’. It will not be possible to make changes after your map has been submitted.</li>
           </ol>
