@@ -8,7 +8,6 @@ import {
   FormGroup,
   Label,
   Input,
-  FormText,
   FormFeedback,
   Fade
 } from 'reactstrap';
@@ -18,8 +17,6 @@ export type FormData = {
   age: string,
   gender: string,
   genderCustom: string,
-  ethnicity: string,
-  ethnicityCustom: string,
   levelEducation: string[],
   birthPlace: string,
   currentPlace: string,
@@ -52,8 +49,6 @@ const validateData = (values: FormData): Validations => ({
   age: notEmpty(values.age),
   gender: notEmpty(values.gender),
   genderCustom: notEmptyCustomResponse(values.genderCustom, values.gender),
-  ethnicity: notEmpty(values.ethnicity),
-  ethnicityCustom: notEmptyCustomResponse(values.ethnicityCustom, values.ethnicity),
   levelEducation: atLeastOne(values.levelEducation),
   birthPlace: notEmpty(values.birthPlace),
   currentPlace: notEmpty(values.currentPlace),
@@ -64,8 +59,6 @@ const _initialValidation: Validations = {
   age: false,
   gender: false,
   genderCustom: false,
-  ethnicity: false,
-  ethnicityCustom: false,
   levelEducation: false,
   birthPlace: false,
   currentPlace: false,
@@ -81,8 +74,6 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     age: '',
     gender: '',
     genderCustom: '',
-    ethnicity: '',
-    ethnicityCustom: '',
     levelEducation: [],
     birthPlace: '',
     currentPlace: '',
@@ -183,51 +174,6 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             values.gender === 'other' && (
               <>
                 <Input type="text" id="gender-custom" className="mt-2" value={values.genderCustom} onChange={handleSelect('genderCustom')} { ...setInputValidation('genderCustom') } required/>
-                <FormFeedback>Please, fill up this input</FormFeedback>
-              </>
-            )
-          }
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="ethnicity">
-            Ethnicity
-            <FormText color="muted">
-              These ethnic groups are taken from the 2011 UK Census. If you feel that these groups do not effectively represent you, please click ‘None of the above’ and add your ethnicity using your own words.
-            </FormText>
-          </Label>
-          <Input type="select" id="ethnicity" value={values.ethnicity} onChange={handleSelect('ethnicity')} { ...setInputValidation('ethnicity') } required>
-            <option value="" disabled>Please choose</option>
-            <optgroup label="White">
-              <option value="English/Welsh/Scottish/Northern Irish/British">English/Welsh/Scottish/Northern Irish/British</option>
-              <option value="Irish">Irish</option>
-              <option value="Gypsy or Irish Traveller">Gypsy or Irish Traveller</option>
-            </optgroup>
-            <optgroup label="Mixed/multiple ethnic groups">
-              <option value="White and Black Caribbean">White and Black Caribbean</option>
-              <option value="White and Black African">White and Black African</option>
-              <option value="White and Asian">White and Asian</option>
-            </optgroup>
-            <optgroup label="Asian/Asian British">
-              <option value="Indian">Indian</option>
-              <option value="Pakistani">Pakistani</option>
-              <option value="Bangladeshi">Bangladeshi</option>
-              <option value="Chinese">Chinese</option>
-            </optgroup>
-            <optgroup label="Black/African/Caribbean/Black British">
-              <option value="African">African</option>
-              <option value="Caribbean">Caribbean</option>
-            </optgroup>
-            <optgroup label="Other ethnic group">
-              <option value="Arab">Arab</option>
-              <option value="other">None of the above. I identify as follows:</option>
-            </optgroup>
-          </Input>
-          <FormFeedback>Please, select an option</FormFeedback>
-          {
-            values.ethnicity === 'other' && (
-              <>
-                <Input type="text" id="ethnicity-custom" className="mt-2" required value={values.ethnicityCustom} onChange={handleSelect('ethnicityCustom')} { ...setInputValidation('ethnicityCustom') }/>
                 <FormFeedback>Please, fill up this input</FormFeedback>
               </>
             )

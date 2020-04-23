@@ -3,15 +3,13 @@ import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'rea
 import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
 import { equals, without, append, isNil, identity, includes } from 'ramda';
 import Axios from 'axios';
-import VALUES, { AgeVal, GenderVal, EthnicityVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
+import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
 
 type Result = {
   personalInformation: {
     age: AgeVal,
     gender: GenderVal,
     genderCustom: string,
-    ethnicity: EthnicityVal,
-    ethnicityCustom: string,
     birthPlace: string,
     currentPlace: string,
     nonNative: NonNativeVal
@@ -28,8 +26,6 @@ type PersonalInformation = Record<FilterVal, string> & {
   age: AgeVal,
   gender: GenderVal,
   genderCustom: string,
-  ethnicity: EthnicityVal,
-  ethnicityCustom: string,
   birthPlace: string,
   currentPlace: string,
   nonNative: NonNativeVal
@@ -205,7 +201,6 @@ const FilterPanel: React.FunctionComponent<{
   });
   const [activeFilters, setActiveFilters] = useState<FilterStatus>({
     age: true,
-    ethnicity: true,
     gender: true,
     nonNative: false
   });
@@ -308,24 +303,6 @@ const FilterPanel: React.FunctionComponent<{
         </FormGroup>
       </Collapse>
 
-      <hr/>
-
-      <Switch id="ethnicity-switch" checked={isFilterActive('ethnicity')} onChange={activateFilter('ethnicity')}>
-        <h6>ethnicity</h6>
-      </Switch>
-      <Collapse isOpen={isFilterActive('ethnicity')}>
-        <FormGroup className="vom-filter-group">
-          {
-            VALUES.ETHNICITY.map(value => (
-              <FormGroup check inline key={value}>
-                <Label check>
-                  <Input disabled={!isFilterActive('ethnicity')} type="checkbox" checked={isChecked('ethnicity', value)} onChange={handleCheck('ethnicity', value)}/>{value}
-                </Label>
-              </FormGroup>
-            ))
-          }
-        </FormGroup>
-      </Collapse>
       <hr/>
       
       <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>

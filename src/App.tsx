@@ -109,8 +109,6 @@ const App = () => {
       age: '',
       gender: '',
       genderCustom: '',
-      ethnicity: '',
-      ethnicityCustom: '',
       levelEducation: [],
       birthPlace: '',
       currentPlace: '',
