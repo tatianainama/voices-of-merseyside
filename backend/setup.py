@@ -7,11 +7,11 @@ setup(name='backend',
         author='',
         author_email='',
         license='',
-        packages=['backend'],
+        packages=['backend', 'utils'],
         zip_safe=False,
         entry_points={
             'console_scripts': [
-                'webserver = backend.app:start'
+                'webserver=backend.app:start',
                 ],
             },
         install_requires=[
@@ -21,4 +21,8 @@ setup(name='backend',
             'psycopg2-binary==2.8.4',
             'SQLAlchemy==1.3.15',
             'waitress==1.4.3',
-            ])
+            ],
+        extras_require={
+            'dev':
+            ['shiv==0.1.2']
+            })
