@@ -124,7 +124,7 @@ const App = () => {
     setCurrentPage(currentPage + 1);
     window.scrollTo(0, 0);
   }
-  const uploadData = () => {
+  const uploadData = (email?: string) => {
     const data = {
       personalInformation: answers.personalInformation,
       canvas: answers.canvas.map(data => ({
@@ -132,7 +132,7 @@ const App = () => {
         path: data.path.exportJSON()
       })),
       canvasSize: answers.canvasSize,
-      email: answers.email
+      email: email
     };
     const postRequest = new XMLHttpRequest();
     postRequest.open('POST', '/backend/', true);
@@ -168,11 +168,7 @@ const App = () => {
     }),
     FollowUp({
       saveData: (email) => {
-        saveAnswers({
-          ...answers,
-          email,
-        });
-        uploadData();
+        uploadData(email);
         changePage();
       }
     }),
