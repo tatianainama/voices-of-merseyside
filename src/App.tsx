@@ -35,7 +35,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
       </p>
       <p>
         We wish to invite all current and former residents of Merseyside to partake in our study and help us to draw a truly representative map of the linguistic landscape of Merseyside,
-        as experienced by you, the Voices of Merseyside.
+        as experienced by you the Voices of Merseyside.
       </p>
     </div>
     <div className="mb-4">
