@@ -34,15 +34,14 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
         identity.
       </p>
       <p>
-        We wish to invite all Merseyside residents of varying ages (16+), gender, class and ethnicity to partake in
-        our study and help us to draw a truly representative map of the linguistic landscape of Merseyside,
+        We wish to invite all current and former residents of Merseyside to partake in our study and help us to draw a truly representative map of the linguistic landscape of Merseyside,
         as experienced by you, the Voices of Merseyside.
       </p>
     </div>
     <div className="mb-4">
       <p className="text-muted font-italic">
       Voices of Merseyside is an MA thesis project created by Tanya Parry. A former resident of Merseyside, who now resides in Amsterdam. If you wish to get in touch, please email:
-      <a className="text-decoration-none" href="mailto:tanya.parry@icloud.com"> tanya.parry@icloud.com</a>
+      <a className="text-decoration-none" href="mailto:voicesofmerseyside@gmail.com"> voicesofmerseyside@gmail.com</a>
       </p>
     </div>
     <Button type="button" outline onClick={() => changePage()} color="info">Let's start!</Button>
