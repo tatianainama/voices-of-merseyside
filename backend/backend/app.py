@@ -1,3 +1,7 @@
+import os
+
+from pathlib import Path
+
 import waitress
 
 from backend.api import Payload
@@ -9,11 +13,16 @@ from flask_restful import Api
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/david/tanya.db'
+    DB_PATH = os.environ.get('DB_PATH', '/home/david/tanya.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
     db.init_app(app)
 
     api = Api(app)
     api.add_resource(Payload, '/')
+
+    if not Path(DB_PATH).exists():
+        with app.app_context():
+            db.create_all()
     return app
 
 def start(prod=True):
