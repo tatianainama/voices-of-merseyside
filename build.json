@@ -1,7 +1,7 @@
 {
   "subprojects": [
     {
-      "name": "fontend",
+      "name": "frontend",
       "dir": ".",
       "artifacts": [
         "build/"
