@@ -27,7 +27,10 @@ type FormDataKey = keyof FormData;
 
 type PersonalInformationProps = {
   closeApp: () => void,
-  saveData: (data: FormData) => void
+  saveData: (data: {
+    personalInformation: FormData,
+    email: string,
+  }) => void
 };
 
 type Validations = {
@@ -80,6 +83,7 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
     nonNative: '',
   });
 
+  const [ email, setEmail ] = useState('');
   const [ submitted, submit ] = useState(false);
   const [ openModal, toggleModal ] = useState(false);
   const [ validationResult, saveValidation ] = useState<Validations>({..._initialValidation});
@@ -226,6 +230,11 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
           </Input>
         </FormGroup>
 
+        <FormGroup>
+          <Label for="follow-up">Would you be willing to participate in a follow-up (online) interview? If so, please leave your email address in the box provided.</Label>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
+        </FormGroup>
+
         <Button
           onClick={() => {
             if (!submitted) {
@@ -233,7 +242,10 @@ export const PersonalInformation: React.FunctionComponent<PersonalInformationPro
             }
             const _validation = validateData(values);
             if (allValid(_validation)) {
-              saveData(values);
+              saveData({
+                personalInformation: values,
+                email
+              });
             } else {
               saveValidation(_validation);
             }

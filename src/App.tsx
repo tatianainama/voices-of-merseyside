@@ -3,45 +3,45 @@ import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstr
 import { Link } from 'react-router-dom';
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
-import FollowUp from './FollowUp';
 
 type SectionComponentProps = {
   changePage: () => void
 }
 const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePage }) => (
   <Fade tag="section" id="vom-intro">
-    <h1 className="mb-4">Voices of Merseyside</h1>
+    <h2 className="mb-4">Voices of Merseyside</h2>
     <div className="mb-4">
       <h4>About</h4>
       <p className="">
-        This project seeks to explore the rich and diverse accents, dialects, and identities of Merseyside.
+        Voices of Merseyside seeks to explore the rich and diverse accents, dialects, and
+        identities of Merseyside. We invite you to help us draw a truly representative map of
+        the linguistic landscape of Merseyside as experienced by you, the Voices of
+        Merseyside.
       </p>
     </div>
-    <div className="mb-5">
+    <div className="mb-3">
       <h4>Online Mapping</h4>
       <p>
-        A speaker’s accent or dialect is closely tied to their sense of identity and community. Using a
-        purposefully designed online tool and geofencing technology, we hope to gain valuable insights into
-        the linguistic landscape of Merseyside and contribute to the wider field of perceptual dialectology.
-        To gather data, residents of Merseyside are asked to draw a digital map of where they believe
-        different accents or dialects in Merseyside to be found. Then, residents will be asked to label the
-        accent, provide examples of words, grammar or sounds that they identify as being associated with
-        the identified area. Finally, to effectively explore language attitudes, the residents will be asked to
-        provide any associations they have with the identified accent or dialect area and rate the accent or
-        dialect in terms of correctness, pleasantness, trustworthiness, and friendliness. Monitoring language
-        attitudes allows linguists to delve further into the social meanings that are often attached to regional
-        accents or dialects, which provide a unique perspective from which to explore perceptions of
-        identity.
+        Former and current residents of Merseyside are asked to draw a digital map of
+        where they believe different accents in Merseyside can be found. Then, residents will
+        be asked to provide information about these accents which will allow the researcher
+        to monitor language attitudes.
       </p>
       <p>
         We wish to invite all current and former residents of Merseyside to partake in our study and help us to draw a truly representative map of the linguistic landscape of Merseyside,
         as experienced by you the Voices of Merseyside.
       </p>
     </div>
-    <div className="mb-4">
+    <div className="mb-3"
+    >
+      <h4>The researcher</h4>
+      <p className="text-left">
+        Voices of Merseyside is an MA thesis project created by Tanya Parry, a fellow Merseysider now living in Amsterdam. If you wish to get in touch, please email: <a className="text-decoration-none" href="mailto:voicesofmerseyside@gmail.com"> voicesofmerseyside@gmail.com</a>
+      </p>
+    </div>
+    <div className="mb-3">
       <p className="text-muted font-italic">
-      Voices of Merseyside is an MA thesis project created by Tanya Parry. A former resident of Merseyside, who now resides in Amsterdam. If you wish to get in touch, please email:
-      <a className="text-decoration-none" href="mailto:voicesofmerseyside@gmail.com"> voicesofmerseyside@gmail.com</a>
+        For more information about the voices of Merseyside project, please click this <Link to="/more">link</Link>
       </p>
     </div>
     <Button type="button" outline onClick={() => changePage()} color="info">Let's start!</Button>
@@ -99,7 +99,7 @@ type AnswersData = {
   email: string,
 };
 
-const PAGES = [0, 1, 2, 3, 4];
+const PAGES = [0, 1, 2, 3];
 const App = () => {
   const [ currentPage, setCurrentPage ] = useState(0);
   const [ exit, setExit ] = useState(false);
@@ -124,20 +124,19 @@ const App = () => {
     setCurrentPage(currentPage + 1);
     window.scrollTo(0, 0);
   }
-  const uploadData = (email?: string) => {
-    const data = {
-      personalInformation: answers.personalInformation,
-      canvas: answers.canvas.map(data => ({
+  const uploadData = (result: AnswersData) => {
+    const _data = {
+      ...result,
+      canvas: result.canvas.map(data => ({
         form: data.form,
         path: data.path.exportJSON()
       })),
-      canvasSize: answers.canvasSize,
-      email: email
+      canvasSize: result.canvasSize,
     };
     const postRequest = new XMLHttpRequest();
     postRequest.open('POST', '/backend/', true);
     postRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    postRequest.send(JSON.stringify(data));
+    postRequest.send(JSON.stringify(_data));
   }
   const sections = [
     Introduction({
@@ -148,28 +147,26 @@ const App = () => {
     }),
     PersonalInformation({
       closeApp: () => setExit(true),
-      saveData: (data: FormData) => {
+      saveData: ({ personalInformation, email }: {
+        personalInformation: FormData,
+        email: string
+      }) => {
         saveAnswers({
           ...answers,
-          personalInformation: data
+          personalInformation: personalInformation,
+          email,
         });
         changePage()
       }
     }),
     DrawCanvas({
       saveData: (data) => {
-        saveAnswers({
+        uploadData({
           ...answers,
           canvas: data.data,
           canvasSize: data.canvas
-        });
+        })
         changePage()
-      }
-    }),
-    FollowUp({
-      saveData: (email) => {
-        uploadData(email);
-        changePage();
       }
     }),
     FinishSection({})

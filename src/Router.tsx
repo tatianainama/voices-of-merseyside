@@ -7,7 +7,7 @@ import {
 import App from './App';
 import Admin from './Admin';
 import ConsentInformation from './Consent';
-
+import MoreInfo from './MoreInfo';
 import './App.css';
 
 export const AppRouting = () => {
@@ -23,6 +23,9 @@ export const AppRouting = () => {
           </Route>
           <Route path="/terms">
             <ConsentInformation/>
+          </Route>
+          <Route path="/more">
+            <MoreInfo/>
           </Route>
         </Switch>
       </div>
