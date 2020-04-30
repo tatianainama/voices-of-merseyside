@@ -22,7 +22,7 @@ const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePa
     <div className="mb-3">
       <h4>Online Mapping</h4>
       <p>
-        Former and current residents of Merseyside are asked to draw a digital map of
+        Residents of Merseyside are asked to draw a digital map of
         where they believe different accents in Merseyside can be found. Then, residents will
         be asked to provide information about these accents which will allow the researcher
         to monitor language attitudes.
