@@ -8,7 +8,7 @@ from backend.models import PayloadModel
 class Payload(Resource):
     def get(self):
         ret = []
-        for entry in PayloadModel.query.all():
+        for entry in PayloadModel.query.order_by("id"):
             item = entry.data
             item.update(id=entry.id)
             ret.append(item)
