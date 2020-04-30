@@ -7,7 +7,12 @@ from backend.models import PayloadModel
 
 class Payload(Resource):
     def get(self):
-        return [item.data for item in PayloadModel.query.all()]
+        ret = []
+        for entry in PayloadModel.query.order_by("id"):
+            item = entry.data
+            item.update(id=entry.id)
+            ret.append(item)
+        return ret
 
     def post(self):
         data = request.get_json()
