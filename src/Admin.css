@@ -48,3 +48,7 @@
 .vom-results-data p {
   padding-right: 1rem;
 }
+
+tr.data-focused {
+  background-color: dimgrey;
+}

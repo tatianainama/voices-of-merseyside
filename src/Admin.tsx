@@ -181,6 +181,16 @@ class Admin extends React.Component<{}, AdminState> {
     })
   }
 
+  focusPath = (id: number) => {
+    this.state.original.map(result => {
+      if (result.id === id) {
+        result.group.visible = true;
+      } else {
+        result.group.visible = false;
+      }
+    })
+  }
+
   render() {
     return (
       <div className="App Admin">
@@ -197,7 +207,7 @@ class Admin extends React.Component<{}, AdminState> {
             ></FilterPanel>
             <div id="vom-results-table">
               <h4>Results</h4>
-              <ResultsTable data={this.state.data}></ResultsTable>
+              <ResultsTable data={this.state.data} focusPath={this.focusPath}></ResultsTable>
             </div>
           </div>
         </Container>
@@ -206,7 +216,8 @@ class Admin extends React.Component<{}, AdminState> {
   }
 }
 
-const ResultsTable: React.FunctionComponent<{ data: StateData[] }> = ({ data }) => {
+const ResultsTable: React.FunctionComponent<{ data: StateData[], focusPath: (id: number) => void }> = ({ data, focusPath }) => {
+  const [ focused, setFocused ] = useState<number>();
   return (
     <Table dark>
       <thead>
@@ -236,7 +247,7 @@ const ResultsTable: React.FunctionComponent<{ data: StateData[] }> = ({ data }) 
           data.map(({ id, personalInformation, canvas }) => {
             return canvas.map(({ form }, i) => {
               return i === 0 ? (
-                <tr key={i}>
+                <tr key={i} onClick={() => { focusPath(id); setFocused(id) }} className={id === focused ? 'data-focused' : ''}>
                   <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
                   <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
                   <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
