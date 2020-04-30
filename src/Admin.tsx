@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
+import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
 import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
+import './Admin.css';
 
 type PersonalInformation = {
   age: AgeVal,
@@ -22,12 +23,14 @@ type Result = {
     width: number,
     height: number
   },
-  email: string
+  email: string,
+  id: number,
 }
 
 type StateData = {
+  id: number,
   personalInformation: PersonalInformation,
-  canvas?: CanvasData[],
+  canvas: CanvasData[],
   group: paper.Group,
   email: string
 };
@@ -35,7 +38,11 @@ type StateData = {
 type FormPath = {
   name: string,
   soundExample: string,
-  associations: string[]
+  associations: string[],
+  correctness: number,
+  friendliness: number,
+  pleasantness: number,
+  trustworthiness: number
 }
 
 type OriginalCanvasData = {
@@ -45,7 +52,7 @@ type OriginalCanvasData = {
 
 type CanvasData = {
   form: FormPath,
-  path: paper.Path
+  // path: paper.Group
 };
 
 type AdminState = {
@@ -127,7 +134,6 @@ class Admin extends React.Component<{}, AdminState> {
       const _data = response.data.map((result, index) => {
         return {
           ...result,
-          canvas: undefined,
           group: this.mkPathGroup(result.canvas, index, canvas, result.canvasSize),
         };
       })
@@ -189,11 +195,80 @@ class Admin extends React.Component<{}, AdminState> {
             <FilterPanel
               applyFilters={this.applyFilters}
             ></FilterPanel>
+            <div id="vom-results-table">
+              <h4>Results</h4>
+              <ResultsTable data={this.state.data}></ResultsTable>
+            </div>
           </div>
         </Container>
       </div>
     )
   }
+}
+
+const ResultsTable: React.FunctionComponent<{ data: StateData[] }> = ({ data }) => {
+  return (
+    <Table dark>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>age</th>
+          <th>g</th>
+          <th>education</th>
+          <th>birth place</th>
+          <th>current place</th>
+          <th>non native</th>
+          <th colSpan={7}>map</th>
+        </tr>
+        <tr>
+          <th colSpan={7}></th>
+          <th>accent name</th>
+          <th>example</th>
+          <th>associations</th>
+          <th>C</th>
+          <th>F</th>
+          <th>P</th>
+          <th>T</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          data.map(({ id, personalInformation, canvas }) => {
+            return canvas.map(({ form }, i) => {
+              return i === 0 ? (
+                <tr key={i}>
+                  <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.levelEducation.map(e => VALUES.EDUCATION[e])}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.birthPlace}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.currentPlace}</th>
+                  <th rowSpan={canvas.length} scope="rowGroup">{VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}</th>
+                  <td>{form.name}</td>
+                  <td>{form.soundExample}</td>
+                  <td>{form.associations.join(', ')}</td>
+                  <td>{form.correctness}</td>
+                  <td>{form.friendliness}</td>
+                  <td>{form.pleasantness}</td>
+                  <td>{form.trustworthiness}</td>
+                </tr>
+              ) : (
+                <tr key={i}>
+                  <td>{form.name}</td>
+                  <td>{form.soundExample}</td>
+                  <td>{form.associations.join(', ')}</td>
+                  <td>{form.correctness}</td>
+                  <td>{form.friendliness}</td>
+                  <td>{form.pleasantness}</td>
+                  <td>{form.trustworthiness}</td>
+                </tr>
+              )
+            })
+          })
+        }
+      </tbody>
+    </Table>
+  )
 }
 
 const FilterPanel: React.FunctionComponent<{

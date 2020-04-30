@@ -1,0 +1,50 @@
+#vom-results {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem 1rem;
+  grid-template-areas: "vom-admin-canvas vom-results-filters" "vom-results-table vom-results-table"
+}
+
+#vom-admin-canvas {
+  grid-area: vom-admin-canvas;
+}
+
+#vom-results-filters {
+  grid-area: vom-results-filters;
+}
+
+#vom-results-table {
+  grid-area: vom-results-table;
+}
+
+#vom-results-filters h6 {
+  color: #6c757d;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  margin-bottom: 0.1rem;
+}
+
+#vom-results-filters h4 {
+  display: flex;
+  justify-content: space-between;
+}
+
+.vom-filter-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 5px;
+  margin-bottom: 0;
+}
+
+#vom-filter-actions button {
+  margin-left: 10px;
+}
+
+.vom-results-data {
+  display: flex;
+}
+
+.vom-results-data p {
+  padding-right: 1rem;
+}
