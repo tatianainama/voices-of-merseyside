@@ -1,34 +1,28 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
-import { equals, without, append, isNil, identity, includes } from 'ramda';
+import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
-import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus } from './services';
+import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
+
+type PersonalInformation = {
+  age: AgeVal,
+  gender: GenderVal,
+  genderCustom: string,
+  birthPlace: string,
+  currentPlace: string,
+  levelEducation: EducationVal[],
+  nonNative: NonNativeVal,
+}
 
 type Result = {
-  personalInformation: {
-    age: AgeVal,
-    gender: GenderVal,
-    genderCustom: string,
-    birthPlace: string,
-    currentPlace: string,
-    nonNative: NonNativeVal
-  },
+  personalInformation: PersonalInformation,
   canvas: OriginalCanvasData[],
   canvasSize: {
     width: number,
     height: number
   },
   email: string
-}
-
-type PersonalInformation = Record<FilterVal, string> & {
-  age: AgeVal,
-  gender: GenderVal,
-  genderCustom: string,
-  birthPlace: string,
-  currentPlace: string,
-  nonNative: NonNativeVal
 }
 
 type StateData = {
@@ -39,9 +33,9 @@ type StateData = {
 };
 
 type FormPath = {
-  name: 'string',
-  soundExample: 'string',
-  associations: 'string'
+  name: string,
+  soundExample: string,
+  associations: string[]
 }
 
 type OriginalCanvasData = {
@@ -84,7 +78,7 @@ const COLORS = [
 
 const mkBgColor = (color: string) => {
   const _color = new Paper.Color(color);
-  _color.alpha = 0.5;
+  _color.alpha = 0.2;
   return _color;
 };
 
@@ -93,7 +87,7 @@ const mkPath = (pathData: string, i: number): paper.Path => {
   const _path = new Path();
   _path.importJSON(pathData);
   _path.strokeColor = new Color(color);
-  _path.strokeWidth = 5;
+  _path.strokeWidth = 2;
   _path.fillColor = mkBgColor(color)
   return _path;
 }
@@ -128,8 +122,8 @@ class Admin extends React.Component<{}, AdminState> {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
-    Axios.get<Result[]>('/backend/').then(response => {
-    // Axios.get<Result[]>('http://127.0.0.1/backend/').then(response => {
+    // Axios.get<Result[]>('/backend/').then(response => {
+    Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
       const _data = response.data.map((result, index) => {
         return {
           ...result,
@@ -145,13 +139,24 @@ class Admin extends React.Component<{}, AdminState> {
     })
   }
 
+  isNotEducational = (value: AgeVal | GenderVal | NonNativeVal | string | EducationVal[]): value is AgeVal | GenderVal | NonNativeVal | string => {
+    return is(String, value);
+  }
+
   applyFilters = (filters: Filters) => {
     const results = this.state.original.filter(
       result => {
         const matches = VALUES.FILTER_KEYS.map(filterKey => {
-          const appliedFilter = filters[filterKey];
-          if (appliedFilter) {
-            return !isNil(filters[filterKey]?.find(equals<string>(result.personalInformation[filterKey])))
+          const filterValues = filters[filterKey];
+          const resultValue = result.personalInformation[filterKey];
+          if (filterValues) {
+            if (this.isNotEducational(resultValue)) {
+              return !isNil(filterValues.find(v => {
+                return v === resultValue
+              }));
+            } else {
+              return filterValues.some(v => includes(v, resultValue))
+            }
           } else {
             return true;
           }
@@ -202,7 +207,8 @@ const FilterPanel: React.FunctionComponent<{
   const [activeFilters, setActiveFilters] = useState<FilterStatus>({
     age: true,
     gender: true,
-    nonNative: false
+    levelEducation: true,
+    nonNative: false,
   });
 
   const isFilterActive = (field: FilterVal) => {
@@ -304,6 +310,26 @@ const FilterPanel: React.FunctionComponent<{
       </Collapse>
 
       <hr/>
+
+      <Switch id="education-switch" checked={isFilterActive('levelEducation')} onChange={activateFilter('levelEducation')}>
+        <h6>Level of education</h6>
+      </Switch>
+      <Collapse isOpen={isFilterActive('levelEducation')}>
+        <FormGroup className="vom-filter-group">
+          {
+            (Object.keys(VALUES.EDUCATION) as EducationVal[]).map(value => (
+              <FormGroup check inline key={value}>
+                <Label check>
+                  <Input disabled={!isFilterActive('levelEducation')} type="checkbox" checked={isChecked('levelEducation', value)} onChange={handleCheck('levelEducation', value)}/>
+                  {VALUES.EDUCATION[value]}
+                </Label>
+              </FormGroup>
+            ))
+          }
+        </FormGroup>
+      </Collapse>
+
+      <hr />
       
       <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>
         <h6> Non natives </h6>
