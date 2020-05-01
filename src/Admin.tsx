@@ -247,21 +247,21 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
         clearFocus();
       }} outline>clear focus</Button>
     </div>
-    <Table dark>
+    <Table bordered className="vom-table-results">
       <thead>
         <tr>
           <th>#</th>
           <th>age</th>
-          <th>g</th>
+          <th>G</th>
           <th>education</th>
           <th>birth place</th>
           <th>current place</th>
-          <th>non native</th>
+          <th>NN</th>
           <th colSpan={7}>map</th>
         </tr>
         <tr>
           <th colSpan={7}></th>
-          <th>accent name</th>
+          <th>name</th>
           <th>example</th>
           <th>associations</th>
           <th>C</th>
@@ -275,7 +275,11 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
           data.map(({ id, personalInformation, canvas }) => {
             return canvas.map(({ form }, i) => {
               return i === 0 ? (
-                <tr key={i} onClick={() => { focusPath(id); setFocused(id) }} className={id === focused ? 'data-focused' : ''}>
+                <tr 
+                  key={i}
+                  onClick={() => { focusPath(id); setFocused(id) }}
+                  className={`main-row ${id === focused ? 'data-focused' : ''}`}
+                >
                   <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
                   <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
                   <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>

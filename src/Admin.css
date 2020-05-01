@@ -1,3 +1,12 @@
+.App.Admin {
+  background-color: white;
+  color: black;
+}
+
+.App.Admin .container-fluid {
+  background-color: white;
+}
+
 #vom-results {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -7,6 +16,7 @@
 
 #vom-admin-canvas {
   grid-area: vom-admin-canvas;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #vom-results-filters {
@@ -49,6 +59,19 @@
   padding-right: 1rem;
 }
 
-tr.data-focused {
-  background-color: dimgrey;
+.vom-table-results thead {
+  text-transform: capitalize;
+}
+
+.vom-table-results tr.main-row { 
+  border-top: 2px solid #a0a2a5;
+}
+
+.vom-table-results tr.data-focused {
+  background-color: #17a2b845 !important;
+}
+
+.vom-table-results tr.data-focused th,
+.vom-table-results tr.data-focused td {
+  border: 1px solid #a0a2a5;
 }
