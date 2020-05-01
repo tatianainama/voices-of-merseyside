@@ -278,10 +278,6 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
           <th>birth place</th>
           <th>current place</th>
           <th>NN</th>
-          <th colSpan={8}>map</th>
-        </tr>
-        <tr>
-          <th colSpan={7}></th>
           <th>#</th>
           <th>name</th>
           <th>example</th>
