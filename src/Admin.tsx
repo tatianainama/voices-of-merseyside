@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table } from 'reactstrap';
+import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table, ListGroup, ListGroupItem } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
 import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
@@ -60,7 +60,8 @@ type CanvasData = {
 type AdminState = {
   original: StateData[],
   data: StateData[],
-  canvas?: paper.PaperScope
+  canvas?: paper.PaperScope,
+  focusedResponse?: StateData,
 };
 
 const mkPathLabel = (pathName: string, path: paper.Path) => {
@@ -109,6 +110,7 @@ class Admin extends React.Component<{}, AdminState> {
       canvas: undefined,
       original: [],
       data: [],
+      focusedResponse: undefined,
     };
   }
 
@@ -116,7 +118,7 @@ class Admin extends React.Component<{}, AdminState> {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value, i) => {
       const _path = mkPath(value.path, index);
       _path.scale(canvas.view.viewSize.width / originalCanvas.width, new Point(0, 0));
-      const _text = mkPathLabel(`${i}-${value.form.name}`, _path);
+      const _text = mkPathLabel(`${value.form.name} (${i})`, _path);
       return [
         ...group,
         _path,
@@ -182,7 +184,8 @@ class Admin extends React.Component<{}, AdminState> {
       }
     )
     this.setState({
-      data: results
+      data: results,
+      focusedResponse: undefined,
     })
   }
 
@@ -190,15 +193,21 @@ class Admin extends React.Component<{}, AdminState> {
     this.state.data.forEach(result => {
       if (result.id === id) {
         result.group.visible = true;
+        this.setState({
+          focusedResponse: result
+        })
       } else {
         result.group.visible = false;
       }
-    })
+    });
   }
 
   clearFocus = () => {
     this.state.data.forEach(result => {
       result.group.visible = true;
+      this.setState({
+        focusedResponse: undefined
+      })
     })
   }
 
@@ -213,9 +222,21 @@ class Admin extends React.Component<{}, AdminState> {
           </div>
           <div id="vom-results">
             <canvas id="vom-admin-canvas"></canvas>
-            <FilterPanel
-              applyFilters={this.applyFilters}
-            ></FilterPanel>
+            <div id="vom-results-panel">
+              <FilterPanel
+                applyFilters={this.applyFilters}
+              ></FilterPanel>
+              <div id="vom-focused-result" className="mt-3">
+                {
+                  this.state.focusedResponse !== undefined && (
+                    <>
+                      <h4>Showing:</h4>
+                      <ViewResponse response={this.state.focusedResponse}/>
+                    </>
+                  )
+                }
+              </div>
+            </div>
             <div id="vom-results-table">
               <h4>Results</h4>
               <ResultsTable
@@ -484,5 +505,62 @@ const Switch: React.FunctionComponent<React.DetailedHTMLProps<React.InputHTMLAtt
     </div>
   )
 };
+
+const ViewResponse: React.FunctionComponent<{response: StateData}> = ({ response }) => {
+  const {
+    personalInformation,
+    email,
+    canvas
+  } = response;
+
+  return (
+    <div className="vom-view-response">
+      <ListGroup>
+        <ListGroupItem>
+          <b>Age</b>: {VALUES.AGE[personalInformation.age]}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>Gender</b>: {personalInformation.gender}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>Education</b>: {personalInformation.levelEducation.map(e => VALUES.EDUCATION[e]).join(', ')}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>Birth Place</b>: {personalInformation.birthPlace}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>Current Place</b>: {personalInformation.currentPlace}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>Non Native?</b>: {VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}
+        </ListGroupItem>
+        <ListGroupItem>
+          <b>email</b>: {email || '-'}
+        </ListGroupItem>
+        {
+          canvas.map(({form}, i) => (
+            <ListGroupItem key={i}>
+              <b>Accent name</b>: {form.name} ({i})<br/>
+              <b>Example</b>: {form.soundExample} <br/>
+              <b>Associations</b>: {form.associations.join(', ')} <br/>
+              <b>Correctness</b>: {form.correctness} <br/>
+              <b>Friendliness</b>: {form.friendliness} <br/>
+              <b>Pleasantness</b>: {form.pleasantness} <br/>
+              <b>Trustworthiness</b>: {form.trustworthiness} <br/>
+            </ListGroupItem>
+          ))
+        }
+      </ListGroup>
+    </div>
+  )
+}
+
+// <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.levelEducation.map(e => VALUES.EDUCATION[e])}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.birthPlace}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.currentPlace}</th>
+// <th rowSpan={canvas.length} scope="rowGroup">{VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}</th>
 
 export default Admin;

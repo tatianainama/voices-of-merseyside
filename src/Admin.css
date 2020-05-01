@@ -11,7 +11,8 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1rem 1rem;
-  grid-template-areas: "vom-admin-canvas vom-results-filters" "vom-results-table vom-results-table"
+  grid-template-areas: "vom-admin-canvas vom-results-panel"
+  "vom-results-table vom-results-table";
 }
 
 #vom-admin-canvas {
@@ -19,8 +20,8 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-#vom-results-filters {
-  grid-area: vom-results-filters;
+#vom-results-panel {
+  grid-area: vom-results-panel;
 }
 
 #vom-results-table {
@@ -61,6 +62,10 @@
 
 .vom-table-results thead {
   text-transform: capitalize;
+}
+
+.vom-table-results tr {
+  cursor: pointer;
 }
 
 .vom-table-results tr.main-row { 
