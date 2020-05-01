@@ -230,7 +230,6 @@ const PathQuestions: React.FunctionComponent<{
     submitted: false,
     validation: {
       name: false,
-      soundExample: false,
       associations: false,
       correctness: false,
       friendliness: false,
@@ -282,7 +281,6 @@ const PathQuestions: React.FunctionComponent<{
       submitted: true,
       validation: {
         name: data.name !== '',
-        soundExample: data.soundExample !== '',
         associations: data.associations.length !== 0,
         correctness: data.correctness !== 0,
         friendliness: data.friendliness !== 0,
@@ -305,8 +303,8 @@ const PathQuestions: React.FunctionComponent<{
           </FormGroup>
 
           <FormGroup>
-            <Label for="path-sound-example">Please provide an example of how this accent sounds</Label>
-            <Input type="text" id="path-sound-example" value={data.soundExample} onChange={handleChange('soundExample')} {...setInputValidation('soundExample')}/>
+            <Label for="path-sound-example">Please provide an example of how this accent sounds (optional)</Label>
+            <Input type="text" id="path-sound-example" value={data.soundExample} onChange={handleChange('soundExample')} placeholder='(e.g. Words, grammar or sounds)'/>
             <FormFeedback>Please, fill up this input</FormFeedback>
           </FormGroup>
 
