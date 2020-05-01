@@ -355,7 +355,10 @@ const FilterPanel: React.FunctionComponent<{
   }
 
   const selectAll = () => {
-    
+    handleFilter({ 
+      ...VALUES.FILTER,
+      nonNative: undefined
+    })
   }
 
   const isChecked = (field: FilterVal, value: string) => {
