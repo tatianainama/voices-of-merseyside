@@ -131,7 +131,11 @@ class Admin extends React.Component<{}, AdminState> {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
-    Axios.get<Result[]>(BACKEND).then(response => {
+    Axios.get<Result[]>(BACKEND, {
+      headers: {
+        'X-Token': 'secret-potato',
+      }
+    }).then(response => {
       const _data = response.data.map((result, index) => {
         return {
           ...result,
