@@ -187,7 +187,7 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   focusPath = (id: number) => {
-    this.state.data.map(result => {
+    this.state.data.forEach(result => {
       if (result.id === id) {
         result.group.visible = true;
       } else {
@@ -197,7 +197,7 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   clearFocus = () => {
-    this.state.data.map(result => {
+    this.state.data.forEach(result => {
       result.group.visible = true;
     })
   }
@@ -257,10 +257,11 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
           <th>birth place</th>
           <th>current place</th>
           <th>NN</th>
-          <th colSpan={7}>map</th>
+          <th colSpan={8}>map</th>
         </tr>
         <tr>
           <th colSpan={7}></th>
+          <th>#</th>
           <th>name</th>
           <th>example</th>
           <th>associations</th>
@@ -273,40 +274,39 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
       <tbody>
         {
           data.map(({ id, personalInformation, canvas }) => {
-            return canvas.map(({ form }, i) => {
-              return i === 0 ? (
-                <tr 
-                  key={i}
-                  onClick={() => { focusPath(id); setFocused(id) }}
-                  className={`main-row ${id === focused ? 'data-focused' : ''}`}
-                >
-                  <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.levelEducation.map(e => VALUES.EDUCATION[e])}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.birthPlace}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.currentPlace}</th>
-                  <th rowSpan={canvas.length} scope="rowGroup">{VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}</th>
-                  <td>{form.name}</td>
-                  <td>{form.soundExample}</td>
-                  <td>{form.associations.join(', ')}</td>
-                  <td>{form.correctness}</td>
-                  <td>{form.friendliness}</td>
-                  <td>{form.pleasantness}</td>
-                  <td>{form.trustworthiness}</td>
-                </tr>
-              ) : (
-                <tr key={i} className={id === focused ? 'data-focused' : ''}>
-                  <td>{form.name}</td>
-                  <td>{form.soundExample}</td>
-                  <td>{form.associations.join(', ')}</td>
-                  <td>{form.correctness}</td>
-                  <td>{form.friendliness}</td>
-                  <td>{form.pleasantness}</td>
-                  <td>{form.trustworthiness}</td>
-                </tr>
-              )
-            })
+            return canvas.map(({ form }, i) => (
+              <tr
+                key={i}
+                onClick={() => { focusPath(id); setFocused(id) }}
+                className={
+                  `${i === 0 ? 'main-row' : ''}
+                   ${id === focused ? 'data-focused' : ''}
+                  `
+                }
+              >
+                {
+                  i === 0 ? (
+                    <>
+                      <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.levelEducation.map(e => VALUES.EDUCATION[e])}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.birthPlace}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.currentPlace}</th>
+                      <th rowSpan={canvas.length} scope="rowGroup">{VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}</th>
+                    </>
+                  ) : null
+                }
+                <td>{i}</td>
+                <td>{form.name}</td>
+                <td>{form.soundExample || '-'}</td>
+                <td>{form.associations.join(', ')}</td>
+                <td>{form.correctness}</td>
+                <td>{form.friendliness}</td>
+                <td>{form.pleasantness}</td>
+                <td>{form.trustworthiness}</td>
+              </tr>
+            ))
           })
         }
       </tbody>
