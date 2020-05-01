@@ -555,12 +555,4 @@ const ViewResponse: React.FunctionComponent<{response: StateData}> = ({ response
   )
 }
 
-// <th rowSpan={canvas.length} scope="rowGroup">{id}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{VALUES.AGE[personalInformation.age]}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.gender[0]}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.levelEducation.map(e => VALUES.EDUCATION[e])}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.birthPlace}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{personalInformation.currentPlace}</th>
-// <th rowSpan={canvas.length} scope="rowGroup">{VALUES.NON_NATIVE[personalInformation.nonNative]  || '-'}</th>
-
 export default Admin;
