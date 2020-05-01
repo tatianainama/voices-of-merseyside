@@ -113,10 +113,10 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope, originalCanvas: { width: number, height: number}) => {
-    const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value) => {
+    const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value, i) => {
       const _path = mkPath(value.path, index);
       _path.scale(canvas.view.viewSize.width / originalCanvas.width, new Point(0, 0));
-      const _text = mkPathLabel(value.form.name, _path);
+      const _text = mkPathLabel(`${i}-${value.form.name}`, _path);
       return [
         ...group,
         _path,
