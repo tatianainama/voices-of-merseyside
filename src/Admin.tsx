@@ -182,12 +182,18 @@ class Admin extends React.Component<{}, AdminState> {
   }
 
   focusPath = (id: number) => {
-    this.state.original.map(result => {
+    this.state.data.map(result => {
       if (result.id === id) {
         result.group.visible = true;
       } else {
         result.group.visible = false;
       }
+    })
+  }
+
+  clearFocus = () => {
+    this.state.data.map(result => {
+      result.group.visible = true;
     })
   }
 
@@ -207,7 +213,11 @@ class Admin extends React.Component<{}, AdminState> {
             ></FilterPanel>
             <div id="vom-results-table">
               <h4>Results</h4>
-              <ResultsTable data={this.state.data} focusPath={this.focusPath}></ResultsTable>
+              <ResultsTable
+                data={this.state.data}
+                focusPath={this.focusPath}
+                clearFocus={this.clearFocus}
+              />
             </div>
           </div>
         </Container>
@@ -216,9 +226,22 @@ class Admin extends React.Component<{}, AdminState> {
   }
 }
 
-const ResultsTable: React.FunctionComponent<{ data: StateData[], focusPath: (id: number) => void }> = ({ data, focusPath }) => {
+type TableProps = { 
+  data: StateData[], 
+  focusPath: (id: number) => void,
+  clearFocus: () => void,
+};
+
+const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, clearFocus }) => {
   const [ focused, setFocused ] = useState<number>();
   return (
+    <>
+    <div className="vom-results-table__actions">
+      <Button onClick={() => {
+        setFocused(undefined);
+        clearFocus();
+      }} outline>clear focus</Button>
+    </div>
     <Table dark>
       <thead>
         <tr>
@@ -264,7 +287,7 @@ const ResultsTable: React.FunctionComponent<{ data: StateData[], focusPath: (id:
                   <td>{form.trustworthiness}</td>
                 </tr>
               ) : (
-                <tr key={i}>
+                <tr key={i} className={id === focused ? 'data-focused' : ''}>
                   <td>{form.name}</td>
                   <td>{form.soundExample}</td>
                   <td>{form.associations.join(', ')}</td>
@@ -279,6 +302,7 @@ const ResultsTable: React.FunctionComponent<{ data: StateData[], focusPath: (id:
         }
       </tbody>
     </Table>
+    </>
   )
 }
 
