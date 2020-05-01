@@ -4,7 +4,7 @@
       "name": "frontend",
       "dir": ".",
       "artifacts": [
-        "build/"
+        "frontend.tar.gz"
       ]
     }
   ]
