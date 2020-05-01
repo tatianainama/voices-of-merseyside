@@ -6,6 +6,8 @@ import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import './Admin.css';
 
+const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
+
 type PersonalInformation = {
   age: AgeVal,
   gender: GenderVal,
@@ -129,8 +131,7 @@ class Admin extends React.Component<{}, AdminState> {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
-    Axios.get<Result[]>('/backend/').then(response => {
-    // Axios.get<Result[]>('https://voicesofmerseyside.inama.dev/backend/').then(response => {
+    Axios.get<Result[]>(BACKEND).then(response => {
       const _data = response.data.map((result, index) => {
         return {
           ...result,
