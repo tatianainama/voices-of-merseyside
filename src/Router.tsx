@@ -18,7 +18,7 @@ export const AppRouting = () => {
           <Route exact path="/">
             <App></App>
           </Route>
-          <Route path="/admin">
+          <Route sensitive path="/admin">
             <Admin></Admin>
           </Route>
           <Route path="/terms">
