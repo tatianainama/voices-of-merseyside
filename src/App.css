@@ -136,6 +136,10 @@ form button {
   border-color: transparent #6c757d transparent transparent;
 }
 
+.vom-draw-reminder {
+  font-size: 0.9rem;
+}
+
 #magic-canvas,
 #vom-admin-canvas {
   width: 100%;

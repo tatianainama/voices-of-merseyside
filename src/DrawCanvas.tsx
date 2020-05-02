@@ -576,6 +576,10 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     return this.state.data.length === 8;
   }
 
+  getDrawsLeft = () => {
+    return 8 - this.state.data.length;
+  }
+
   componentDidMount = () => {
     const canvas = new PaperScope();
     canvas.setup('magic-canvas');
@@ -595,7 +599,7 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
     return (
       <>
       <div id="vom-canvas-tools">
-        <ButtonGroup className="mb-3" size="sm">
+        <ButtonGroup className="" size="sm">
           <Button onClick={() => this.props.showHelp()} color="info">
             HELP
           </Button>
@@ -614,10 +618,9 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
             ) : null
           }
         </ButtonGroup>
-
         {
           this.state.pathSelected !== undefined ? (
-            <ButtonGroup className="mb-3" size="sm">
+            <ButtonGroup className="" size="sm">
               <Button onClick={() => this.toggleModal(true)}>
                 EDIT DATA
               </Button>
@@ -627,6 +630,9 @@ class Canvas extends React.Component<CanvasProps, CanvasState> {
             </ButtonGroup>
           ) : null 
         }
+      </div>
+      <div className="vom-draw-reminder">
+        You can draw up to {this.getDrawsLeft()} more shapes
       </div>
       <div id="vom-canvas-mode">
         {
