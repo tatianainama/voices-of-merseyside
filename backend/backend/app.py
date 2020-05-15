@@ -1,11 +1,13 @@
+import csv
 import os
 
 from pathlib import Path
 
 import waitress
 
-from backend.api import Payload
+from backend.api import Payload, CSVExport
 from backend.database import db
+from backend.voices_to_csv import map_entry_to_rows, headers
 
 from flask import Flask
 from flask_restful import Api
@@ -19,6 +21,7 @@ def create_app():
 
     api = Api(app)
     api.add_resource(Payload, '/')
+    api.add_resource(CSVExport, '/csv')
 
     if not Path(DB_PATH).exists():
         with app.app_context():

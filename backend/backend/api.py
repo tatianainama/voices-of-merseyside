@@ -1,8 +1,12 @@
-from flask import request, make_response
+import csv
+import os
+
+from flask import request, make_response, send_from_directory
 from flask_restful import Resource
 
 from backend.database import db
 from backend.models import PayloadModel
+from backend.voices_to_csv import headers, map_entry_to_rows
 
 
 class Payload(Resource):
@@ -23,3 +27,15 @@ class Payload(Resource):
         db.session.commit()
 
         return make_response('', 201)
+
+
+class CSVExport(Resource):
+    def get(self):
+        ret = []
+        with open('tanya.csv', 'w') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow(headers)
+            for entry in PayloadModel.query.order_by("id"):
+                for subentry in map_entry_to_rows(entry.data, entry.id):
+                    writer.writerow(subentry)
+        return send_from_directory(os.getcwd(), 'tanya.csv', as_attachment=True)
