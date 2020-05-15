@@ -31,11 +31,11 @@ class Payload(Resource):
 
 class CSVExport(Resource):
     def get(self):
-        ret = []
-        with open('tanya.csv', 'w') as csvfile:
+        fname = 'voices-of-merseyside.csv'
+        with open(fname, 'w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(headers)
             for entry in PayloadModel.query.order_by("id"):
                 for subentry in map_entry_to_rows(entry.data, entry.id):
                     writer.writerow(subentry)
-        return send_from_directory(os.getcwd(), 'tanya.csv', as_attachment=True)
+        return send_from_directory(os.getcwd(), fname, as_attachment=True)
