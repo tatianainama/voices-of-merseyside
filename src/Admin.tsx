@@ -4,6 +4,7 @@ import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
 import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
+import FileDownload from 'js-file-download';
 import './Admin.css';
 
 const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
@@ -211,6 +212,15 @@ class Admin extends React.Component<{}, AdminState> {
     })
   }
 
+  downloadData = () => {
+    Axios.get(`${BACKEND}/csv`, {
+      headers: {
+        'X-Token': 'secret-potato',
+      }
+    }).then(response => {
+      FileDownload(response.data, 'voices-of-merseyside.csv')
+    })
+  }
   render() {
     return (
       <div className="App Admin">
@@ -219,6 +229,7 @@ class Admin extends React.Component<{}, AdminState> {
           <div className="vom-results-data">
             <p>total responses: <Badge color="info">{this.state.original.length}</Badge></p>
             <p>showing: <Badge color="info">{this.state.data.length}</Badge></p>
+            <p><Badge color="success" href="#" onClick={() => this.downloadData() }>download</Badge></p>
           </div>
           <div id="vom-results">
             <canvas id="vom-admin-canvas"></canvas>
