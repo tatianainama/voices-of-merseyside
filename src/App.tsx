@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Fade, Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Container, Fade, Button, Form, FormGroup, Input, Label, Jumbotron } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import PersonalInformation, { FormData } from './PersonalInformation';
 import DrawCanvas, { CanvasData } from './DrawCanvas';
@@ -7,6 +7,27 @@ import DrawCanvas, { CanvasData } from './DrawCanvas';
 type SectionComponentProps = {
   changePage: () => void
 }
+
+export const ClosureNotice = () => (
+  <Container style={{
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
+  }}>
+    <Jumbotron>
+      <h2>Voices of Merseyside</h2>
+      <p>
+      Thank you for your interest in the Voices of Merseyside project. Unfortunately, the survey phase of
+      this study has now been closed as the target number of responses has now been met.
+      </p>
+      <p>
+      I am incredibly grateful to everyone who has taken an interest in this project.
+      </p>
+    </Jumbotron>
+  </Container>
+);
+
 const Introduction: React.FunctionComponent<SectionComponentProps> = ({ changePage }) => (
   <Fade tag="section" id="vom-intro">
     <h2 className="mb-4">Voices of Merseyside</h2>

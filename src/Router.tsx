@@ -4,7 +4,7 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-import App from './App';
+import App, { ClosureNotice } from './App';
 import Admin from './Admin';
 import ConsentInformation from './Consent';
 import MoreInfo from './MoreInfo';
@@ -16,7 +16,7 @@ export const AppRouting = () => {
       <div>
         <Switch>
           <Route exact path="/">
-            <App></App>
+            <ClosureNotice></ClosureNotice>
           </Route>
           <Route sensitive path="/admin">
             <Admin></Admin>
