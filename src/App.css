@@ -141,7 +141,8 @@ form button {
 }
 
 #magic-canvas,
-#vom-admin-canvas {
+#vom-admin-canvas,
+#vom-heatmap-canvas {
   width: 100%;
   background-color: #F2F2F2;
   background-image: url('merseyside-nobg-4_5-LIGHT.png');

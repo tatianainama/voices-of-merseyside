@@ -8,7 +8,9 @@ import App, { ClosureNotice } from './App';
 import Admin from './Admin';
 import ConsentInformation from './Consent';
 import MoreInfo from './MoreInfo';
+import Heatmap from './Heatmap';
 import './App.css';
+import results from './results.json';
 
 export const AppRouting = () => {
   return (
@@ -20,6 +22,11 @@ export const AppRouting = () => {
           </Route>
           <Route sensitive path="/admin">
             <Admin></Admin>
+          </Route>
+          <Route path="/heatmap">
+            <Heatmap
+              data={results}
+            ></Heatmap>
           </Route>
           <Route path="/terms">
             <ConsentInformation/>
