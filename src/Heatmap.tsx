@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Path, PaperScope, Point, Size, Rectangle, Color } from 'paper';
+import { Path, PaperScope, Point, Size, Rectangle, Color, Layer } from 'paper';
 import { Container, CustomInput, FormGroup, Label, Row, Col } from 'reactstrap';
 import './Heatmap.css';
 
@@ -43,7 +43,14 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       data: [],
       canvas: undefined,
       grid: [],
-      heatmapType: HeatmapType.Amount
+      heatmapType: HeatmapType.Amount,
+      heatmapLayers: {
+        amount: undefined,
+        correctness: undefined,
+        friendliness: undefined,
+        pleasantness: undefined,
+        trustworthiness: undefined
+      }
     }
   }
 
@@ -104,24 +111,64 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
 
   heatmapByAmount = (grid: Grid) => {
-    grid.forEach(section => {
-      section.forEach(({ area, items }) => {
-        area.fillColor = new Color(`rgb(${items.length}, ${items.length}, ${items.length})`)
+    if (this.state.heatmapLayers.amount === undefined) {
+      const newLayer = new Layer({ name: 'amount' });
+      grid.forEach(section => {
+        section.forEach(({ area, items }) => {
+          const newArea = area.clone();
+          newArea.fillColor = new Color(`rgb(${items.length}, ${items.length}, ${items.length})`)
+          newLayer.addChild(newArea);
+        })
+      });
+      this.setState({
+        heatmapLayers: {
+          ...this.state.heatmapLayers,
+          amount: newLayer
+        }
       })
-    })
+    } else {
+      this.state.canvas!.project.layers.forEach(l => {
+        if (l.name === 'amount') {
+          l.visible = true;
+        } else {
+          l.visible = false
+        }
+      })
+    }
   }
 
   heatmapBy = (key: 'correctness' | 'friendliness' | 'pleasantness' | 'trustworthiness', grid: Grid) => {    
-    grid.forEach(section => {
-      section.forEach(({area, items}) => {
-        const total = items.reduce<number>((tot, item) => {
-          return item.data[key] ? tot + item.data[key] : tot;
-        }, 0);
-        if (total !== 0) {
-          area.fillColor = new Color({ hue: RANGE(total / items.length), saturation: 1, brightness: items.length/MAX})
+    if (this.state.heatmapLayers[key] === undefined) {
+      const newLayer = new Layer({ name: key });
+      grid.forEach(section => {
+        section.forEach(({area, items}) => {
+          const newArea = area.clone();
+          const total = items.reduce<number>((tot, item) => {
+            return item.data[key] ? tot + item.data[key] : tot;
+          }, 0);
+          if (total !== 0) {
+            newArea.fillColor = new Color({ hue: RANGE(total / items.length), saturation: 1, brightness: items.length/MAX})
+          } else {
+            newArea.fillColor = new Color('black')
+          }
+          newLayer.addChild(newArea);
+        })
+      });
+      this.setState({
+        heatmapLayers: {
+          ...this.state.heatmapLayers,
+          [key]: newLayer
         }
       })
-    })
+    } else {
+      this.state.canvas!.project.layers.forEach(l => {
+        if (l.name === key) {
+          l.visible = true;
+        } else {
+          l.visible = false;
+        }
+      })
+    }
   }
 
   changeHeatmapType = (type: HeatmapType) => {
@@ -171,7 +218,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
         <Col>
           <div className="vom-heatmap-actions">
             <FormGroup>
-              <Label for="heatmapType">Heatmap type</Label>
+              <h4>Heatmap type</h4> 
               <div>
                 <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
                   label="by amount of responses"
@@ -256,7 +303,14 @@ type HeatmapState = {
   data: HeatmapData[],
   canvas?: paper.PaperScope,
   grid: Grid,
-  heatmapType: HeatmapType
+  heatmapType: HeatmapType,
+  heatmapLayers: {
+    amount: paper.Layer | undefined,
+    friendliness: paper.Layer | undefined,
+    correctness: paper.Layer | undefined,
+    pleasantness: paper.Layer | undefined,
+    trustworthiness: paper.Layer | undefined,
+  }
 }
 
 
