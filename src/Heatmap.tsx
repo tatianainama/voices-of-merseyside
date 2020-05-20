@@ -3,7 +3,7 @@ import { Path, PaperScope, Point, Size, Rectangle, Color } from 'paper';
 import { Container, CustomInput, FormGroup, Label, Row, Col } from 'reactstrap';
 import './Heatmap.css';
 
-const X_SEGMENTS = 30;
+const X_SEGMENTS = 25;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
 const MAX = 200;
 const output_start = 0,
@@ -141,6 +141,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     const data = this.drawMapData(this.props.data, canvas.view.size.width);
     const grid = this.mkGrid(canvas);
+    this.heatmapByAmount(grid);
     this.setState({
       data,
       canvas,
