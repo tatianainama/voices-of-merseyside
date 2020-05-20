@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import { Path, PaperScope, Point, Size, Rectangle, Color, PointText } from 'paper';
-
-const CANVAS_STYLE = {
-  width: '50%',
-  border: '2px solid black'
-};
+import { Path, PaperScope, Point, Size, Rectangle, Color } from 'paper';
+import { Container, CustomInput, FormGroup, Label, Row, Col } from 'reactstrap';
+import './Heatmap.css';
 
 const X_SEGMENTS = 30;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
@@ -29,6 +26,14 @@ type HeatmapData = {
   trustworthiness: number
 }
 
+enum HeatmapType {
+  Amount = 'amount',
+  Friendliness = 'friendliness',
+  Correctness = 'correctness',
+  Pleasantness = 'pleasantness',
+  Trustworthiness = 'trustworthiness'
+}
+
 class Heatmap extends Component<HeatmapProps, HeatmapState> {
   
   constructor(props: HeatmapProps) {
@@ -38,6 +43,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       data: [],
       canvas: undefined,
       grid: [],
+      heatmapType: HeatmapType.Amount
     }
   }
 
@@ -98,13 +104,8 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
 
   heatmapByAmount = (grid: Grid) => {
-    let xs: number[] = [];
     grid.forEach(section => {
       section.forEach(({ area, items }) => {
-        xs = [
-          ...xs,
-          items.length
-        ];
         area.fillColor = new Color(`rgb(${items.length}, ${items.length}, ${items.length})`)
       })
     })
@@ -114,17 +115,24 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     grid.forEach(section => {
       section.forEach(({area, items}) => {
         const total = items.reduce<number>((tot, item) => {
-          return tot + (item.data[key] || 0);
+          return item.data[key] ? tot + item.data[key] : tot;
         }, 0);
         if (total !== 0) {
           area.fillColor = new Color({ hue: RANGE(total / items.length), saturation: 1, brightness: items.length/MAX})
-          new PointText({
-            point: area.bounds.leftCenter,
-            content: (total / items.length).toFixed(1)
-          })
         }
       })
     })
+  }
+
+  changeHeatmapType = (type: HeatmapType) => {
+    this.setState({
+      heatmapType: type
+    });
+    if (type === HeatmapType.Amount) {
+      this.heatmapByAmount(this.state.grid)
+    } else {
+      this.heatmapBy(type, this.state.grid)
+    }
   }
 
   componentDidMount = () => {
@@ -141,23 +149,65 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
 
   render = () => (
-    <div className="vom-heatmap" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-      <div>
-        <button onClick={() => { this.heatmapByAmount(this.state.grid)}}>by shape amount</button>
-        <button onClick={() => { this.heatmapBy('friendliness', this.state.grid)}}>by friendliness</button>
-        <button onClick={() => { this.heatmapBy('correctness', this.state.grid)}}>by correct</button>
-        <button onClick={() => { this.heatmapBy('pleasantness', this.state.grid)}}>by pleasant</button>
-        <button onClick={() => { this.heatmapBy('trustworthiness', this.state.grid)}}>by trustworthiness</button>
-      </div>
-      <div id="vom-heatmap-range">
-        <div>1</div>
-        <div>2</div>
-        <div>3</div>
-        <div>4</div>
-        <div>5</div>
-      </div>
-      <canvas id="vom-heatmap-canvas" style={CANVAS_STYLE}></canvas>
-    </div>
+    <Container className="vom-heatmap">
+      <Row>
+        <Col xs="12" md="8">
+          <div className="vom-heatmap-map">
+            {
+              this.state.heatmapType !== HeatmapType.Amount ? (
+                <div id="vom-heatmap-range">
+                  <div>1</div>
+                  <div>2</div>
+                  <div>3</div>
+                  <div>4</div>
+                  <div>5</div>
+                </div>
+              ) : null
+            }
+            <canvas id="vom-heatmap-canvas"></canvas>
+          </div>
+        </Col>
+        <Col>
+          <div className="vom-heatmap-actions">
+            <FormGroup>
+              <Label for="heatmapType">Heatmap type</Label>
+              <div>
+                <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
+                  label="by amount of responses"
+                  value={HeatmapType.Amount}
+                  checked={this.state.heatmapType === HeatmapType.Amount}
+                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                />
+                <CustomInput type="radio" id="heatmap-by-friendliness" name="by-friendliness"
+                  label="by friendliness"
+                  value={HeatmapType.Friendliness}
+                  checked={this.state.heatmapType === HeatmapType.Friendliness}
+                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                />
+                <CustomInput type="radio" id="heatmap-by-correctness" name="by-correctness"
+                  label="by correctness"
+                  value={HeatmapType.Correctness}
+                  checked={this.state.heatmapType === HeatmapType.Correctness}
+                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                />
+                <CustomInput type="radio" id="heatmap-by-pleasantness" name="by-pleasantness"
+                  label="by pleasantness"
+                  value={HeatmapType.Pleasantness}
+                  checked={this.state.heatmapType === HeatmapType.Pleasantness}
+                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                />
+                <CustomInput type="radio" id="heatmap-by-trustworthiness" name="by-trustworthiness"
+                  label="by trustworthiness"
+                  value={HeatmapType.Trustworthiness}
+                  checked={this.state.heatmapType === HeatmapType.Trustworthiness}
+                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                />
+              </div>
+            </FormGroup>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   )
 }
 
@@ -205,6 +255,7 @@ type HeatmapState = {
   data: HeatmapData[],
   canvas?: paper.PaperScope,
   grid: Grid,
+  heatmapType: HeatmapType
 }
 
 
