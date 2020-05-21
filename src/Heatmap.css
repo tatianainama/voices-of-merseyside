@@ -7,11 +7,21 @@
   border: 2px solid black;
 }
 
-#vom-heatmap-range {
-  background: rgb(0,0,255);
-  background: linear-gradient(to right, #ff0000 1%,#ffff00 25%,#28d328 50%,#00ffea 75%,#0000ff 100%);
+#vom-heatmap-range,
+#vom-heatmap-amount-range {
   height: 30px;
   display: flex;
   justify-content: space-between;
   font-weight: bold;
+  border: 2px solid black;
+}
+
+#vom-heatmap-range {
+  background: rgb(0,0,255);
+  background: linear-gradient(to right, #ff0000 1%,#ffff00 25%,#28d328 50%,#00ffea 75%,#0000ff 100%);
+}
+
+#vom-heatmap-amount-range {
+  background: rgb(0,0,0);
+  background: linear-gradient(to right, #000000 1%,#ffffff 100%);
 }

@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Path, PaperScope, Point, Size, Rectangle, Color, Layer } from 'paper';
-import { Container, CustomInput, FormGroup, Label, Row, Col } from 'reactstrap';
+import { Path, PaperScope, Point, Size, Rectangle, Color, Layer, Raster, PointText } from 'paper';
+import { Container, CustomInput, FormGroup, Row, Col } from 'reactstrap';
+import map from './merseyside-nobg-white.png';
+
 import './Heatmap.css';
 
-const X_SEGMENTS = 25;
+const X_SEGMENTS = 50;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
 const MAX = 200;
 const output_start = 0,
@@ -43,14 +45,9 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       data: [],
       canvas: undefined,
       grid: [],
+      mapLayer: undefined,
+      areaAmount: undefined,
       heatmapType: HeatmapType.Amount,
-      heatmapLayers: {
-        amount: undefined,
-        correctness: undefined,
-        friendliness: undefined,
-        pleasantness: undefined,
-        trustworthiness: undefined
-      }
     }
   }
 
@@ -99,87 +96,70 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
           size: gridSectionSize,
         });
 
+        const area = new Path.Rectangle(rect);
+        const items = canvas.project.activeLayer.getItems({
+          overlapping: rect
+        })
+        
         grid[row][column] = {
-          area: new Path.Rectangle(rect),
-          items: canvas.project.activeLayer.getItems({
-            overlapping: rect
-          })
+          area,
+          items
         }
       }
     }
     return grid;
   }
 
-  heatmapByAmount = (grid: Grid) => {
-    if (this.state.heatmapLayers.amount === undefined) {
-      const newLayer = new Layer({ name: 'amount' });
-      grid.forEach(section => {
-        section.forEach(({ area, items }) => {
-          const newArea = area.clone();
-          newArea.fillColor = new Color(`rgb(${items.length}, ${items.length}, ${items.length})`)
-          newLayer.addChild(newArea);
-        })
-      });
-      this.setState({
-        heatmapLayers: {
-          ...this.state.heatmapLayers,
-          amount: newLayer
-        }
-      })
+  mkFillColor = (key: HeatmapType, items: paper.Item[]) => {
+    if (key === HeatmapType.Amount) {
+      return new Color(`rgb(${items.length}, ${items.length}, ${items.length})`);
     } else {
-      this.state.canvas!.project.layers.forEach(l => {
-        if (l.name === 'amount') {
-          l.visible = true;
-        } else {
-          l.visible = false
-        }
-      })
+      const total = items.reduce<number>((tot, item) => {
+        return item.data[key] ? tot + item.data[key] : tot;
+      }, 0);
+      return total !== 0 ? 
+        new Color({ hue: RANGE(total / items.length), saturation: 1, brightness: items.length/MAX}) : 
+        new Color('black')
     }
   }
 
-  heatmapBy = (key: 'correctness' | 'friendliness' | 'pleasantness' | 'trustworthiness', grid: Grid) => {    
-    if (this.state.heatmapLayers[key] === undefined) {
-      const newLayer = new Layer({ name: key });
-      grid.forEach(section => {
-        section.forEach(({area, items}) => {
-          const newArea = area.clone();
-          const total = items.reduce<number>((tot, item) => {
-            return item.data[key] ? tot + item.data[key] : tot;
-          }, 0);
-          if (total !== 0) {
-            newArea.fillColor = new Color({ hue: RANGE(total / items.length), saturation: 1, brightness: items.length/MAX})
-          } else {
-            newArea.fillColor = new Color('black')
-          }
-          newLayer.addChild(newArea);
-        })
-      });
-      this.setState({
-        heatmapLayers: {
-          ...this.state.heatmapLayers,
-          [key]: newLayer
-        }
+  changeHeatmapColor = (type: HeatmapType, grid: Grid) => {
+    grid.forEach(section => {
+      section.forEach(({ area, items }) => {
+        area.fillColor = this.mkFillColor(type, items);
       })
-    } else {
-      this.state.canvas!.project.layers.forEach(l => {
-        if (l.name === key) {
-          l.visible = true;
-        } else {
-          l.visible = false;
-        }
-      })
-    }
-  }
-
-  changeHeatmapType = (type: HeatmapType) => {
+    })
     this.setState({
       heatmapType: type
-    });
-    if (type === HeatmapType.Amount) {
-      this.heatmapByAmount(this.state.grid)
+    })
+  }
+
+  showMap = (canvas: paper.PaperScope) => {
+    if (this.state.mapLayer) {
+      this.state.mapLayer.bringToFront();
     } else {
-      this.heatmapBy(type, this.state.grid)
+      const mapLayer = new Layer({ name: 'mapLayer' });
+      const raster = new Raster(map);
+      raster.onLoad = () => {
+        raster.position = canvas.view.center;
+        raster.size = canvas.view.viewSize;
+      }
+      mapLayer.addChild(raster);
+      mapLayer.bringToFront();
+      this.setState({ mapLayer });
     }
+  }
+
+  mkAmountCounter = () => {
+    const counter = new PointText({
+      point: [0, 0],
+      content: '',
+      fillColor: 'white'
+    });
+  
+    this.setState({
+      areaAmount: counter
+    })
   }
 
   componentDidMount = () => {
@@ -188,7 +168,9 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     const data = this.drawMapData(this.props.data, canvas.view.size.width);
     const grid = this.mkGrid(canvas);
-    this.heatmapByAmount(grid);
+    this.mkAmountCounter();
+    this.changeHeatmapColor(HeatmapType.Amount, grid);
+    this.showMap(canvas);
     this.setState({
       data,
       canvas,
@@ -210,7 +192,12 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
                   <div>4</div>
                   <div>5</div>
                 </div>
-              ) : null
+              ) : (
+                <div id="vom-heatmap-amount-range">
+                  <div>1</div>
+                  <div>200</div>
+                </div>
+              )
             }
             <canvas id="vom-heatmap-canvas"></canvas>
           </div>
@@ -224,31 +211,31 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
                   label="by amount of responses"
                   value={HeatmapType.Amount}
                   checked={this.state.heatmapType === HeatmapType.Amount}
-                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                  onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
                 />
                 <CustomInput type="radio" id="heatmap-by-friendliness" name="by-friendliness"
                   label="by friendliness"
                   value={HeatmapType.Friendliness}
                   checked={this.state.heatmapType === HeatmapType.Friendliness}
-                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                  onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
                 />
                 <CustomInput type="radio" id="heatmap-by-correctness" name="by-correctness"
                   label="by correctness"
                   value={HeatmapType.Correctness}
                   checked={this.state.heatmapType === HeatmapType.Correctness}
-                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                  onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
                 />
                 <CustomInput type="radio" id="heatmap-by-pleasantness" name="by-pleasantness"
                   label="by pleasantness"
                   value={HeatmapType.Pleasantness}
                   checked={this.state.heatmapType === HeatmapType.Pleasantness}
-                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                  onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
                 />
                 <CustomInput type="radio" id="heatmap-by-trustworthiness" name="by-trustworthiness"
                   label="by trustworthiness"
                   value={HeatmapType.Trustworthiness}
                   checked={this.state.heatmapType === HeatmapType.Trustworthiness}
-                  onChange={ e => { this.changeHeatmapType(e.currentTarget.value as HeatmapType)}}
+                  onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
                 />
               </div>
             </FormGroup>
@@ -303,14 +290,9 @@ type HeatmapState = {
   data: HeatmapData[],
   canvas?: paper.PaperScope,
   grid: Grid,
+  mapLayer: paper.Layer | undefined,
+  areaAmount: paper.TextItem | undefined,
   heatmapType: HeatmapType,
-  heatmapLayers: {
-    amount: paper.Layer | undefined,
-    friendliness: paper.Layer | undefined,
-    correctness: paper.Layer | undefined,
-    pleasantness: paper.Layer | undefined,
-    trustworthiness: paper.Layer | undefined,
-  }
 }
 
 
