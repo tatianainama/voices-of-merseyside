@@ -20,13 +20,13 @@ export const AppRouting = () => {
           <Route exact path="/">
             <ClosureNotice></ClosureNotice>
           </Route>
-          <Route sensitive path="/admin">
-            <Admin></Admin>
-          </Route>
-          <Route path="/heatmap">
+          <Route path="/admin/heatmap">
             <Heatmap
               data={results}
             ></Heatmap>
+          </Route>
+          <Route path="/admin">
+            <Admin></Admin>
           </Route>
           <Route path="/terms">
             <ConsentInformation/>
