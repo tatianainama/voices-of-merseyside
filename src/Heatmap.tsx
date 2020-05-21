@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Path, PaperScope, Point, Size, Rectangle, Color, Layer, Raster, PointText } from 'paper';
-import { Container, CustomInput, FormGroup, Row, Col } from 'reactstrap';
+import { Container, CustomInput, FormGroup, Row, Col, Button } from 'reactstrap';
+import FileSaver from 'file-saver';
 import map from './merseyside-nobg-white.png';
 
 import './Heatmap.css';
@@ -162,6 +163,14 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     })
   }
 
+  saveAsImage = () => {
+    const canvas = document.getElementById("vom-heatmap-canvas");
+    //@ts-ignore
+    canvas.toBlob((blob) => {
+      FileSaver.saveAs(blob, `vom-${this.state.heatmapType}.png`);
+    })
+  }
+
   componentDidMount = () => {
     const canvas = new PaperScope();
     canvas.setup('vom-heatmap-canvas');
@@ -205,6 +214,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
         <Col>
           <div className="vom-heatmap-actions">
             <FormGroup>
+              <Button size="sm" onClick={() => {this.saveAsImage()} }>download current map</Button>
               <h4>Heatmap type</h4> 
               <div>
                 <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
