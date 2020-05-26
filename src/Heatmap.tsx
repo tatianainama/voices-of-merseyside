@@ -16,10 +16,10 @@ const output_start = 0,
 const RANGE = (n: number) => output_start + ((output_end - output_start) / (input_end - input_start)) * (n - input_start);
 
 
-type Grid = Array<Array<{
+type Grid = Array<{
   area: paper.Path.Rectangle,
   items: Array<paper.Item>
-}>>
+}>
 
 type HeatmapData = {
   id: [number, number],
@@ -82,15 +82,13 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     return _data;
   }
 
-  mkGrid = (canvas: paper.PaperScope): Grid=> {
+  mkGrid = (canvas: paper.PaperScope): Grid => {
     const width = canvas.view.size.width,
           height = canvas.view.size.height;
     const gridSectionSize = new Size(width/X_SEGMENTS, height/Y_SEGMENTS);
     let grid: Grid = [];
 
     for(let row = 0; row < Y_SEGMENTS; row ++) {
-      grid[row] = [];
-
       for(let column = 0; column < X_SEGMENTS; column ++) {
         let rect = new Rectangle({
           point: [column * gridSectionSize.width, row * gridSectionSize.height],
@@ -102,10 +100,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
           overlapping: rect
         })
         
-        grid[row][column] = {
-          area,
-          items
-        }
+        grid.push({area, items});
       }
     }
     return grid;
@@ -125,10 +120,8 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
 
   changeHeatmapColor = (type: HeatmapType, grid: Grid) => {
-    grid.forEach(section => {
-      section.forEach(({ area, items }) => {
-        area.fillColor = this.mkFillColor(type, items);
-      })
+    grid.forEach(({area, items}) => {
+      area.fillColor = this.mkFillColor(type, items);
     })
     this.setState({
       heatmapType: type
