@@ -6,7 +6,7 @@ import map from './merseyside-nobg-white.png';
 
 import './Heatmap.css';
 
-const X_SEGMENTS = 50;
+const X_SEGMENTS = 36;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
 const MAX = 200;
 const output_start = 0,
@@ -151,18 +151,6 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     }
   }
 
-  mkAmountCounter = () => {
-    const counter = new PointText({
-      point: [0, 0],
-      content: '',
-      fillColor: 'white'
-    });
-  
-    this.setState({
-      areaAmount: counter
-    })
-  }
-
   saveAsImage = () => {
     const canvas = document.getElementById("vom-heatmap-canvas");
     //@ts-ignore
@@ -177,7 +165,6 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     const data = this.drawMapData(this.props.data, canvas.view.size.width);
     const grid = this.mkGrid(canvas);
-    this.mkAmountCounter();
     this.changeHeatmapColor(HeatmapType.Amount, grid);
     this.showMap(canvas);
     this.setState({
