@@ -204,121 +204,121 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   
   render = () => (
     <Container className="vom-heatmap">
-    <Row>
-    <Col xs="12" md="8">
-    <div className="vom-heatmap-map">
-    {
-      this.state.heatmapType !== HeatmapType.Amount ? (
-        <div id="vom-heatmap-range">
-        <div>1</div>
-        <div>2</div>
-        <div>3</div>
-        <div>4</div>
-        <div>5</div>
-        </div>
-        ) : (
-          <div id="vom-heatmap-amount-range">
-          <div>1</div>
-          <div>200</div>
+      <Row>
+        <Col xs="12" md="8">
+          <div className="vom-heatmap-map">
+            {
+              this.state.heatmapType !== HeatmapType.Amount ? (
+                <div id="vom-heatmap-range">
+                  <div>1</div>
+                  <div>2</div>
+                  <div>3</div>
+                  <div>4</div>
+                  <div>5</div>
+                </div>
+              ) : (
+                <div id="vom-heatmap-amount-range">
+                  <div>1</div>
+                  <div>200</div>
+                </div>
+              )
+            }
+            <canvas id="vom-heatmap-canvas"></canvas>
           </div>
-          )
-        }
-        <canvas id="vom-heatmap-canvas"></canvas>
-        </div>
         </Col>
         <Col>
-        <div className="vom-heatmap-actions">
-        <FormGroup>
-        <Button size="sm" onClick={() => {this.saveAsImage()} }>download current map</Button>
-        <h4>Heatmap type</h4> 
-        <div>
-        <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
-        label="by amount of responses"
-        value={HeatmapType.Amount}
-        checked={this.state.heatmapType === HeatmapType.Amount}
-        onChange={ this.handleChangeColor }
-        />
-        <CustomInput type="radio" id="heatmap-by-friendliness" name="by-friendliness"
-        label="by friendliness"
-        value={HeatmapType.Friendliness}
-        checked={this.state.heatmapType === HeatmapType.Friendliness}
-        onChange={ this.handleChangeColor }
-        />
-        <CustomInput type="radio" id="heatmap-by-correctness" name="by-correctness"
-        label="by correctness"
-        value={HeatmapType.Correctness}
-        checked={this.state.heatmapType === HeatmapType.Correctness}
-        onChange={ this.handleChangeColor }
-        />
-        <CustomInput type="radio" id="heatmap-by-pleasantness" name="by-pleasantness"
-        label="by pleasantness"
-        value={HeatmapType.Pleasantness}
-        checked={this.state.heatmapType === HeatmapType.Pleasantness}
-        onChange={ this.handleChangeColor }
-        />
-        <CustomInput type="radio" id="heatmap-by-trustworthiness" name="by-trustworthiness"
-        label="by trustworthiness"
-        value={HeatmapType.Trustworthiness}
-        checked={this.state.heatmapType === HeatmapType.Trustworthiness}
-        onChange={ this.handleChangeColor }
-        />
-        </div>
-        </FormGroup>
-        </div>
+          <div className="vom-heatmap-actions">
+            <FormGroup>
+              <Button size="sm" onClick={() => {this.saveAsImage()} }>download current map</Button>
+              <h4>Heatmap type</h4> 
+              <div>
+                <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
+                label="by amount of responses"
+                value={HeatmapType.Amount}
+                checked={this.state.heatmapType === HeatmapType.Amount}
+                onChange={ this.handleChangeColor }
+                />
+                <CustomInput type="radio" id="heatmap-by-friendliness" name="by-friendliness"
+                label="by friendliness"
+                value={HeatmapType.Friendliness}
+                checked={this.state.heatmapType === HeatmapType.Friendliness}
+                onChange={ this.handleChangeColor }
+                />
+                <CustomInput type="radio" id="heatmap-by-correctness" name="by-correctness"
+                label="by correctness"
+                value={HeatmapType.Correctness}
+                checked={this.state.heatmapType === HeatmapType.Correctness}
+                onChange={ this.handleChangeColor }
+                />
+                <CustomInput type="radio" id="heatmap-by-pleasantness" name="by-pleasantness"
+                label="by pleasantness"
+                value={HeatmapType.Pleasantness}
+                checked={this.state.heatmapType === HeatmapType.Pleasantness}
+                onChange={ this.handleChangeColor }
+                />
+                <CustomInput type="radio" id="heatmap-by-trustworthiness" name="by-trustworthiness"
+                label="by trustworthiness"
+                value={HeatmapType.Trustworthiness}
+                checked={this.state.heatmapType === HeatmapType.Trustworthiness}
+                onChange={ this.handleChangeColor }
+                />
+              </div>
+            </FormGroup>
+          </div>
         </Col>
-        </Row>
-        </Container>
-        )
-      }
+      </Row>
+    </Container>
+  )
+}
       
-      type PersonalInformation = {
-        age: string,
-        gender: string,
-        genderCustom: string,
-        birthPlace: string,
-        currentPlace: string,
-        levelEducation: string[],
-        nonNative: string,
-      }
-      
-      type FormPath = {
-        name: string,
-        soundExample: string,
-        associations: string[],
-        correctness: number,
-        friendliness: number,
-        pleasantness: number,
-        trustworthiness: number
-      }
-      
-      type OriginalCanvasData = {
-        form: FormPath,
-        path: string,
-      }
-      
-      type Result = {
-        personalInformation: PersonalInformation,
-        canvas: OriginalCanvasData[],
-        canvasSize: {
-          width: number,
-          height: number
-        },
-        email: string,
-        id: number,
-      }
-      
-      type HeatmapProps = {
-        data: Result[],
-      }
-      
-      type HeatmapState = {
-        data: HeatmapData[],
-        canvas?: paper.PaperScope,
-        grid: Grid,
-        mapLayer: paper.Layer | undefined,
-        areaAmount: paper.TextItem | undefined,
-        heatmapType: HeatmapType,
-      }
-      
-      
-      export default Heatmap;
+type PersonalInformation = {
+  age: string,
+  gender: string,
+  genderCustom: string,
+  birthPlace: string,
+  currentPlace: string,
+  levelEducation: string[],
+  nonNative: string,
+}
+
+type FormPath = {
+  name: string,
+  soundExample: string,
+  associations: string[],
+  correctness: number,
+  friendliness: number,
+  pleasantness: number,
+  trustworthiness: number
+}
+
+type OriginalCanvasData = {
+  form: FormPath,
+  path: string,
+}
+
+type Result = {
+  personalInformation: PersonalInformation,
+  canvas: OriginalCanvasData[],
+  canvasSize: {
+    width: number,
+    height: number
+  },
+  email: string,
+  id: number,
+}
+
+type HeatmapProps = {
+  data: Result[],
+}
+
+type HeatmapState = {
+  data: HeatmapData[],
+  canvas?: paper.PaperScope,
+  grid: Grid,
+  mapLayer: paper.Layer | undefined,
+  areaAmount: paper.TextItem | undefined,
+  heatmapType: HeatmapType,
+}
+
+
+export default Heatmap;
