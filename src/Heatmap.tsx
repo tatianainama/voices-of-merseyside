@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Path, PaperScope, Point, Size, Rectangle, Color, Layer, Raster, PointText } from 'paper';
+import { Path, PaperScope, Point, Size, Rectangle, Color, Layer, Raster, PointText, Group } from 'paper';
 import { Container, CustomInput, FormGroup, Row, Col, Button } from 'reactstrap';
 import FileSaver from 'file-saver';
 import map from './merseyside-nobg-white.png';
@@ -83,44 +83,50 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     return _data;
   }
   
-  mkChunk = (xCount: number, yCount: number, parent: paper.Rectangle, layer: paper.Layer): {area: paper.Path.Rectangle, items: paper.Item[]}[] => {
-    let ret = [];
+  mkChunk = (xCount: number, yCount: number, parent: paper.Rectangle, group: paper.Group): {rectangle: paper.Rectangle, items: paper.Item[]}[] => {
+    let chunks = [];
     const width = parent.width / xCount;
     const height = parent.height / yCount;
     const size = new Size(width, height);
     for(let y = 0; y < yCount; y++){
       for(let x = 0; x < xCount; x++){
-
-        let rect = new Rectangle({
+        let rectangle = new Rectangle({
           point: [(x*width)+parent.left, (y*height)+parent.top],
           size,
         });
-        const area = new Path.Rectangle(rect);
-        area.fillColor = new Color('black');
-        const items = layer.getItems({overlapping: rect})
-        ret.push({area, items: items});
+        const items = group.getItems({overlapping: rectangle})
+        chunks.push({rectangle, items});
       }
     }
-
-    return ret;
+    
+    return chunks;
   }
   
   mkGrid = (canvas: paper.PaperScope): Grid=> {
     let grid: Grid = [];
     const bigChunkSizeX = 4, bigChunkSizeY = 5;
     const mainLayer = canvas.project.activeLayer;
-    this.mkChunk(bigChunkSizeX, bigChunkSizeY, canvas.project.view.bounds, mainLayer).forEach((chunk, i) => {
-      const items = chunk.items;
-      let layer = new Layer();
-      layer.addChildren(items);
-      this.mkChunk(X_SEGMENTS, Y_SEGMENTS, chunk.area.bounds, layer).forEach(smallchunk => {
-        grid.push({
-          area: smallchunk.area,
-          items: smallchunk.items
-        })
-      });
-    });
-    mainLayer.sendToBack();
+    this.mkChunk(bigChunkSizeX*X_SEGMENTS, Y_SEGMENTS*bigChunkSizeY, canvas.project.view.bounds, mainLayer).forEach(({rectangle, items}) => {
+      grid.push({
+        area: new Path.Rectangle(rectangle),
+        items
+      })
+    })
+    // this.mkChunk(bigChunkSizeX, bigChunkSizeY, canvas.project.view.bounds, mainLayer, true).forEach((chunk, i) => {
+    //   const x = new Path.Rectangle(chunk.rectangle);
+    //   console.log(x.bounds)
+    //   x.strokeColor = new Color('red');
+    //   x.strokeWidth = 3;
+    //   const items = chunk.items;
+    //   const group = new Group(items);
+    //   this.mkChunk(X_SEGMENTS, Y_SEGMENTS, chunk.rectangle, group).forEach(smallchunk => {
+    //     const area = new Path.Rectangle(smallchunk.rectangle);
+    //     grid.push({
+    //       area,
+    //       items: smallchunk.items
+    //     })
+    //   });
+    // });
     
     return grid;
   }
@@ -141,7 +147,9 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   
   changeHeatmapColor = (type: HeatmapType, grid: Grid) => {
     grid.forEach(({ area, items }) => {
-      area.fillColor = this.mkFillColor(type, items);
+      const color = this.mkFillColor(type, items);
+      area.fillColor = color;
+      area.strokeColor = color;
     })
   }
   
@@ -188,15 +196,23 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
     const data = this.drawMapData(this.props.data, canvas.view.size.width);
     const grid = this.mkGrid(canvas);
-    this.changeHeatmapColor(HeatmapType.Amount, grid);
-
+    this.changeHeatmapColor(HeatmapType.Friendliness, grid);
+    
     this.setState({
       data,
       canvas,
       grid,
-      heatmapType: HeatmapType.Amount,
+      heatmapType: HeatmapType.Friendliness,
       mapLayer: this.showMap(canvas)
     })
+  }
+
+  handleChangeColor = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const heatmapType = e.currentTarget.value as HeatmapType;
+    this.changeHeatmapColor(heatmapType, this.state.grid);
+    this.setState({
+      heatmapType
+    });
   }
   
   render = () => (
@@ -233,31 +249,31 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
         label="by amount of responses"
         value={HeatmapType.Amount}
         checked={this.state.heatmapType === HeatmapType.Amount}
-        onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
+        onChange={ this.handleChangeColor }
         />
         <CustomInput type="radio" id="heatmap-by-friendliness" name="by-friendliness"
         label="by friendliness"
         value={HeatmapType.Friendliness}
         checked={this.state.heatmapType === HeatmapType.Friendliness}
-        onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
+        onChange={ this.handleChangeColor }
         />
         <CustomInput type="radio" id="heatmap-by-correctness" name="by-correctness"
         label="by correctness"
         value={HeatmapType.Correctness}
         checked={this.state.heatmapType === HeatmapType.Correctness}
-        onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
+        onChange={ this.handleChangeColor }
         />
         <CustomInput type="radio" id="heatmap-by-pleasantness" name="by-pleasantness"
         label="by pleasantness"
         value={HeatmapType.Pleasantness}
         checked={this.state.heatmapType === HeatmapType.Pleasantness}
-        onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
+        onChange={ this.handleChangeColor }
         />
         <CustomInput type="radio" id="heatmap-by-trustworthiness" name="by-trustworthiness"
         label="by trustworthiness"
         value={HeatmapType.Trustworthiness}
         checked={this.state.heatmapType === HeatmapType.Trustworthiness}
-        onChange={ e => { this.changeHeatmapColor(e.currentTarget.value as HeatmapType, this.state.grid)}}
+        onChange={ this.handleChangeColor }
         />
         </div>
         </FormGroup>
