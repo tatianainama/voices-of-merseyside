@@ -9,13 +9,16 @@
 
 #vom-results {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem 1rem;
   grid-template-areas: "vom-admin-canvas vom-results-panel"
   "vom-results-table vom-results-table";
 }
 
 #vom-admin-canvas {
+  width: unset!important;
+  max-height: 90vh;
+  justify-self: center;
   grid-area: vom-admin-canvas;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
