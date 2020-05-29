@@ -103,14 +103,13 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
   
   mkGrid = (canvas: paper.PaperScope): Grid=> {
-    let grid: Grid = [];
     const bigChunkSizeX = 4, bigChunkSizeY = 5;
     const mainLayer = canvas.project.activeLayer;
-    this.mkChunk(bigChunkSizeX*X_SEGMENTS, Y_SEGMENTS*bigChunkSizeY, canvas.project.view.bounds, mainLayer).forEach(({rectangle, items}) => {
-      grid.push({
+    return this.mkChunk(bigChunkSizeX*X_SEGMENTS, Y_SEGMENTS*bigChunkSizeY, canvas.project.view.bounds, mainLayer).map(({rectangle, items}) => {
+      return {
         area: new Path.Rectangle(rectangle),
         items
-      })
+      }
     })
     // this.mkChunk(bigChunkSizeX, bigChunkSizeY, canvas.project.view.bounds, mainLayer, true).forEach((chunk, i) => {
     //   const x = new Path.Rectangle(chunk.rectangle);
@@ -127,8 +126,6 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     //     })
     //   });
     // });
-    
-    return grid;
   }
   
   
