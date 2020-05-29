@@ -7,16 +7,13 @@
   background-color: white;
 }
 
-#vom-results {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 1rem;
-  grid-template-areas: "vom-admin-canvas vom-results-panel"
-  "vom-results-table vom-results-table";
+.vom-canvii {
+  display: flex;
+  align-items: flex-start;
 }
 
 #vom-admin-canvas {
-  max-height: 90vh;
+  width: 50%!important;
   justify-self: center;
   grid-area: vom-admin-canvas;
   border: 1px solid rgba(0, 0, 0, 0.1);

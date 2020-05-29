@@ -5,6 +5,7 @@ import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import FileDownload from 'js-file-download';
+import Heatmap from './Heatmap';
 import './Admin.css';
 
 const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
@@ -143,7 +144,7 @@ class Admin extends React.Component<{}, AdminState> {
     }).then(response => {
       const _data = response.data.map((result, index) => {
         let group = new Group();
-        return {
+        const item = {
           ...result,
           canvas: result.canvas.map((item, i) => {
             const _path = mkPath(item.path, index, canvas.view.size.width / result.canvasSize.width);
@@ -156,6 +157,8 @@ class Admin extends React.Component<{}, AdminState> {
           }),
           group: group,
         };
+        canvas.project.activeLayer.addChild(group);
+        return item;
       })
       this.setState({
         canvas,
@@ -248,8 +251,11 @@ class Admin extends React.Component<{}, AdminState> {
               applyFilters={this.applyFilters}
             ></FilterPanel>
           </div>
-          <div id="vom-results">
+          <div className="vom-canvii">
             <canvas id="vom-admin-canvas"></canvas>
+            <Heatmap data={this.state.data}></Heatmap>
+          </div>
+          <div id="vom-results">
             <div id="vom-results-panel">
               <div id="vom-focused-result" className="mt-3">
                 {

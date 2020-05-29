@@ -21,9 +21,9 @@ export const AppRouting = () => {
             <ClosureNotice></ClosureNotice>
           </Route>
           <Route path="/admin/heatmap">
-            <Heatmap
+            {/* <Heatmap
               data={results}
-            ></Heatmap>
+            ></Heatmap> */}
           </Route>
           <Route path="/admin">
             <Admin></Admin>
