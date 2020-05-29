@@ -9,7 +9,7 @@
 
 #vom-results {
   display: grid;
-  grid-template-columns: 1.2fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem 1rem;
   grid-template-areas: "vom-admin-canvas vom-results-panel"
   "vom-results-table vom-results-table";
@@ -81,4 +81,13 @@
 .vom-table-results tr.data-focused th,
 .vom-table-results tr.data-focused td {
   border: 1px solid #a0a2a5;
+}
+
+.vom-filter-switch-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.vom-filter-switch {
+  width: 25%;
 }

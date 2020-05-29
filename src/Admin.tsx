@@ -231,12 +231,14 @@ class Admin extends React.Component<{}, AdminState> {
             <p>showing: <Badge color="info">{this.state.data.length}</Badge></p>
             <p><Badge color="success" href="#" onClick={() => this.downloadData() }>download</Badge></p>
           </div>
+          <div>
+            <FilterPanel
+              applyFilters={this.applyFilters}
+            ></FilterPanel>
+          </div>
           <div id="vom-results">
             <canvas id="vom-admin-canvas"></canvas>
             <div id="vom-results-panel">
-              <FilterPanel
-                applyFilters={this.applyFilters}
-              ></FilterPanel>
               <div id="vom-focused-result" className="mt-3">
                 {
                   this.state.focusedResponse !== undefined && (
@@ -421,82 +423,85 @@ const FilterPanel: React.FunctionComponent<{
         </div>
       </h4>
 
-      <Switch id="age-switch" checked={isFilterActive('age')} onChange={activateFilter('age')}>
-        <h6>
-          Age
-        </h6>
-      </Switch>
-      <Collapse isOpen={isFilterActive('age')}>
-        <FormGroup className="vom-filter-group">
-            {
-              (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
-                <FormGroup check inline key={value}>
-                  <Label check>
-                    <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
-                  </Label>
-                </FormGroup>
-              ))
-            }
-        </FormGroup>
-      </Collapse>
-
-      <hr></hr>
-
-      <Switch id="gender-switch" checked={isFilterActive('gender')} onChange={activateFilter('gender')}>
-        <h6>Gender</h6>
-      </Switch>
-      <Collapse isOpen={isFilterActive('gender')}>
-        <FormGroup className="vom-filter-group">
-          {
-            VALUES.GENDER.map(value => (
-              <FormGroup check inline key={value}>
-                <Label check>
-                  <Input disabled={!isFilterActive('gender')} type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
-                </Label>
-              </FormGroup>
-            ))
-          }
-        </FormGroup>
-      </Collapse>
-
-      <hr/>
-
-      <Switch id="education-switch" checked={isFilterActive('levelEducation')} onChange={activateFilter('levelEducation')}>
-        <h6>Level of education</h6>
-      </Switch>
-      <Collapse isOpen={isFilterActive('levelEducation')}>
-        <FormGroup className="vom-filter-group">
-          {
-            (Object.keys(VALUES.EDUCATION) as EducationVal[]).map(value => (
-              <FormGroup check inline key={value}>
-                <Label check>
-                  <Input disabled={!isFilterActive('levelEducation')} type="checkbox" checked={isChecked('levelEducation', value)} onChange={handleCheck('levelEducation', value)}/>
-                  {VALUES.EDUCATION[value]}
-                </Label>
-              </FormGroup>
-            ))
-          }
-        </FormGroup>
-      </Collapse>
-
-      <hr />
+      <div className="vom-filter-switch-group mb-3">
       
-      <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>
-        <h6> Non natives </h6>
-      </Switch>
-      <Collapse isOpen={isFilterActive('nonNative')}>
-        <FormGroup className="vom-filter-group">
-          {
-            (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
-              <FormGroup check inline key={value}>
-                <Label check>
-                  <Input disabled={!isFilterActive('nonNative')} type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
-                </Label>
-              </FormGroup>
-            ))
-          }
-        </FormGroup>
-      </Collapse>
+        <div className="vom-filter-switch">
+          <Switch id="age-switch" checked={isFilterActive('age')} onChange={activateFilter('age')}>
+            <h6>
+              Age
+            </h6>
+          </Switch>
+          <Collapse isOpen={isFilterActive('age')}>
+            <FormGroup className="vom-filter-group">
+                {
+                  (Object.keys(VALUES.AGE) as AgeVal[]).map(value => (
+                    <FormGroup check inline key={value}>
+                      <Label check>
+                        <Input type="checkbox" checked={isChecked('age', value)} onChange={handleCheck('age', value)}/>{VALUES.AGE[value]}
+                      </Label>
+                    </FormGroup>
+                  ))
+                }
+            </FormGroup>
+          </Collapse>
+        </div>
+
+        <div className="vom-filter-switch">
+          <Switch id="gender-switch" checked={isFilterActive('gender')} onChange={activateFilter('gender')}>
+            <h6>Gender</h6>
+          </Switch>
+          <Collapse isOpen={isFilterActive('gender')}>
+            <FormGroup className="vom-filter-group">
+              {
+                VALUES.GENDER.map(value => (
+                  <FormGroup check inline key={value}>
+                    <Label check>
+                      <Input disabled={!isFilterActive('gender')} type="checkbox" checked={isChecked('gender', value)} onChange={handleCheck('gender', value)}/>{value}
+                    </Label>
+                  </FormGroup>
+                ))
+              }
+            </FormGroup>
+          </Collapse>
+        </div>
+        <div className="vom-filter-switch">
+          <Switch id="education-switch" checked={isFilterActive('levelEducation')} onChange={activateFilter('levelEducation')}>
+            <h6>Level of education</h6>
+          </Switch>
+          <Collapse isOpen={isFilterActive('levelEducation')}>
+            <FormGroup className="vom-filter-group">
+              {
+                (Object.keys(VALUES.EDUCATION) as EducationVal[]).map(value => (
+                  <FormGroup check inline key={value}>
+                    <Label check>
+                      <Input disabled={!isFilterActive('levelEducation')} type="checkbox" checked={isChecked('levelEducation', value)} onChange={handleCheck('levelEducation', value)}/>
+                      {VALUES.EDUCATION[value]}
+                    </Label>
+                  </FormGroup>
+                ))
+              }
+            </FormGroup>
+          </Collapse>
+        </div>
+        <div className="vom-filter-switch">
+          <Switch id="non-native-switch" checked={isFilterActive('nonNative')} onChange={activateFilter('nonNative')}>
+            <h6> Non natives </h6>
+          </Switch>
+          <Collapse isOpen={isFilterActive('nonNative')}>
+            <FormGroup className="vom-filter-group">
+              {
+                (Object.keys(VALUES.NON_NATIVE) as NonNativeVal[]).map(value => (
+                  <FormGroup check inline key={value}>
+                    <Label check>
+                      <Input disabled={!isFilterActive('nonNative')} type="checkbox" checked={isChecked('nonNative', value)} onChange={handleCheck('nonNative', value)}/>{VALUES.NON_NATIVE[value]}
+                    </Label>
+                  </FormGroup>
+                ))
+              }
+            </FormGroup>
+          </Collapse>
+        </div>
+      </div>
 
     </div>
   )
