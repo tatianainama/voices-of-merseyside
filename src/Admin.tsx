@@ -55,6 +55,7 @@ type OriginalCanvasData = {
 
 type CanvasData = {
   form: FormPath,
+  path: paper.Path
   // path: paper.Group
 };
 
@@ -93,13 +94,15 @@ const mkBgColor = (color: string) => {
   return _color;
 };
 
-const mkPath = (pathData: string, i: number): paper.Path => {
+const mkPath = (pathData: string, i: number, scale: number): paper.Path => {
   const color = COLORS[i % COLORS.length];
   const _path = new Path();
   _path.importJSON(pathData);
   _path.strokeColor = new Color(color);
   _path.strokeWidth = 2;
   _path.fillColor = mkBgColor(color)
+  _path.selected = false;
+  _path.scale(scale, new Point(0, 0));
   return _path;
 }
 
@@ -117,8 +120,7 @@ class Admin extends React.Component<{}, AdminState> {
 
   mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope, originalCanvas: { width: number, height: number}) => {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value, i) => {
-      const _path = mkPath(value.path, index);
-      _path.scale(canvas.view.viewSize.width / originalCanvas.width, new Point(0, 0));
+      const _path = mkPath(value.path, index, canvas.view.viewSize.width / originalCanvas.width);
       const _text = mkPathLabel(`${value.form.name} (${i})`, _path);
       return [
         ...group,
@@ -140,9 +142,19 @@ class Admin extends React.Component<{}, AdminState> {
       }
     }).then(response => {
       const _data = response.data.map((result, index) => {
+        let group = new Group();
         return {
           ...result,
-          group: this.mkPathGroup(result.canvas, index, canvas, result.canvasSize),
+          canvas: result.canvas.map((item, i) => {
+            const _path = mkPath(item.path, index, canvas.view.size.width / result.canvasSize.width);
+            const _text = mkPathLabel(`${item.form.name} (${i})`, _path);
+            group.addChildren([_path, _text]);
+            return {
+              path: _path,
+              form: item.form
+            }
+          }),
+          group: group,
         };
       })
       this.setState({
