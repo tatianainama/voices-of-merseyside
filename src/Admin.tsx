@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table, ListGroup, ListGroupItem } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
-import { without, append, isNil, identity, includes, is } from 'ramda';
+import { without, append, isNil, identity, includes, is, path } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import FileDownload from 'js-file-download';
@@ -65,6 +65,7 @@ type AdminState = {
   data: StateData[],
   canvas?: paper.PaperScope,
   focusedResponse?: StateData,
+  path?: paper.Path
 };
 
 const mkPathLabel = (pathName: string, path: paper.Path) => {
@@ -95,7 +96,7 @@ const mkBgColor = (color: string) => {
   return _color;
 };
 
-const mkPath = (pathData: string, i: number, scale: number): paper.Path => {
+const mkPath = (pathData: string, i: number, scale: number, data: FormPath): paper.Path => {
   const color = COLORS[i % COLORS.length];
   const _path = new Path();
   _path.importJSON(pathData);
@@ -104,6 +105,7 @@ const mkPath = (pathData: string, i: number, scale: number): paper.Path => {
   _path.fillColor = mkBgColor(color)
   _path.selected = false;
   _path.scale(scale, new Point(0, 0));
+  _path.data = data;
   return _path;
 }
 
@@ -116,12 +118,13 @@ class Admin extends React.Component<{}, AdminState> {
       original: [],
       data: [],
       focusedResponse: undefined,
+      path: undefined
     };
   }
 
   mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope, originalCanvas: { width: number, height: number}) => {
     const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value, i) => {
-      const _path = mkPath(value.path, index, canvas.view.viewSize.width / originalCanvas.width);
+      const _path = mkPath(value.path, index, canvas.view.viewSize.width / originalCanvas.width, value.form);
       const _text = mkPathLabel(`${value.form.name} (${i})`, _path);
       return [
         ...group,
@@ -131,6 +134,48 @@ class Admin extends React.Component<{}, AdminState> {
     }, []);
     const group = new Group(_data);
     return group;
+  }
+
+
+  addPoint = (canvas: paper.PaperScope) => (event: any) => {
+    if (!this.state.path) {
+      console.log('new path');
+      let path = new canvas.Path({
+        strokeColor: new Color('red'),
+        strokeWidth: 5,
+      });
+      path.bringToFront();
+      path.add(event.point);
+      this.setState({ path });
+    } else {
+      this.state.path.add(event.point);
+    }
+    
+  }
+
+
+
+  mkDrawingTool = (canvas: paper.PaperScope) => {
+    let Tool = new canvas.Tool();
+    Tool.onMouseDown = this.addPoint(canvas);
+    Tool.onMouseDrag = this.addPoint(canvas);
+    Tool.onMouseUp = () => {
+      const { path } = this.state;
+      if (path) {
+        path.add(path.firstSegment);
+        path.closePath();
+        path.simplify();
+        this.state.data.forEach(d => { d.group.visible = false })
+        const items = canvas.project.activeLayer.getItems({
+          overlapping: path.bounds,
+          class: Path,
+        });
+        let x = items.filter(i => i.data.name !== undefined);
+        x.forEach(i => i.visible = true)
+        console.log('items', x);
+
+      }
+    }
   }
 
   componentDidMount = () => {
@@ -147,7 +192,7 @@ class Admin extends React.Component<{}, AdminState> {
         const item = {
           ...result,
           canvas: result.canvas.map((item, i) => {
-            const _path = mkPath(item.path, index, canvas.view.size.width / result.canvasSize.width);
+            const _path = mkPath(item.path, index, canvas.view.size.width / result.canvasSize.width, item.form);
             const _text = mkPathLabel(`${item.form.name} (${i})`, _path);
             group.addChildren([_path, _text]);
             return {
@@ -158,6 +203,7 @@ class Admin extends React.Component<{}, AdminState> {
           group: group,
         };
         canvas.project.activeLayer.addChild(group);
+        this.mkDrawingTool(canvas);
         return item;
       })
       this.setState({
@@ -236,6 +282,7 @@ class Admin extends React.Component<{}, AdminState> {
       FileDownload(response.data, 'voices-of-merseyside.csv')
     })
   }
+
   render() {
     return (
       <div className="App Admin">
@@ -253,7 +300,7 @@ class Admin extends React.Component<{}, AdminState> {
           </div>
           <div className="vom-canvii">
             <canvas id="vom-admin-canvas"></canvas>
-            <Heatmap data={this.state.data}></Heatmap>
+            {/* <Heatmap data={this.state.data}></Heatmap> */}
           </div>
           <div id="vom-results">
             <div id="vom-results-panel">

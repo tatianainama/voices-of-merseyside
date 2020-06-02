@@ -264,13 +264,12 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       const data = this.drawMapData(this.props.data, canvas);
       this.state.heatmapLayer?.remove();
       const { grid, layer } = this.mkGrid(canvas, canvas.project.layers[0]);
-      this.changeHeatmapColor(HeatmapType.Friendliness, grid);
+      this.changeHeatmapColor(this.state.heatmapType, grid);
       this.showMap(canvas);
       this.setState({
         grid,
         heatmapLayer: layer,
         data,
-        heatmapType: HeatmapType.Friendliness,
       })
     }
   }
