@@ -138,42 +138,45 @@ class Admin extends React.Component<{}, AdminState> {
 
 
   addPoint = (canvas: paper.PaperScope) => (event: any) => {
-    if (!this.state.path) {
-      console.log('new path');
-      let path = new canvas.Path({
-        strokeColor: new Color('red'),
-        strokeWidth: 5,
-      });
-      path.bringToFront();
-      path.add(event.point);
-      this.setState({ path });
-    } else {
-      this.state.path.add(event.point);
+    if(this.state.path) {
+      this.state.path.remove();
     }
-    
+    let path = new canvas.Path({
+      strokeColor: new Color('red'),
+      strokeWidth: 5,
+    });
+    path.bringToFront();
+    path.add(event.point);
+    this.setState({ path });
   }
 
-
+  showPathDrawings = (items: paper.Item[]) => {
+    items.forEach(i => {
+      let group = i.parent;
+      group.children.forEach(child => {
+        child.visible = child.id === i.id;
+      });
+    })
+  }
 
   mkDrawingTool = (canvas: paper.PaperScope) => {
     let Tool = new canvas.Tool();
     Tool.onMouseDown = this.addPoint(canvas);
-    Tool.onMouseDrag = this.addPoint(canvas);
+    Tool.onMouseDrag = (event: any) => {
+      this.state.path?.add(event.point)
+    };
     Tool.onMouseUp = () => {
       const { path } = this.state;
       if (path) {
         path.add(path.firstSegment);
         path.closePath();
         path.simplify();
-        this.state.data.forEach(d => { d.group.visible = false })
         const items = canvas.project.activeLayer.getItems({
           overlapping: path.bounds,
           class: Path,
         });
-        let x = items.filter(i => i.data.name !== undefined);
-        x.forEach(i => i.visible = true)
-        console.log('items', x);
-
+        console.log(items);
+        // this.showPathDrawings(items);
       }
     }
   }
@@ -188,7 +191,12 @@ class Admin extends React.Component<{}, AdminState> {
       }
     }).then(response => {
       const _data = response.data.map((result, index) => {
-        let group = new Group();
+        let group = new Group({
+          data: {
+            ...result.personalInformation,
+            id: result.id
+          }
+        });
         const item = {
           ...result,
           canvas: result.canvas.map((item, i) => {
