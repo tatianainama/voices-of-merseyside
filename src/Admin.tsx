@@ -253,7 +253,7 @@ class Admin extends React.Component<{}, AdminState> {
           </div>
           <div className="vom-canvii">
             <canvas id="vom-admin-canvas"></canvas>
-            <Heatmap data={this.state.data}></Heatmap>
+            {/* <Heatmap data={this.state.data}></Heatmap> */}
           </div>
           <div id="vom-results">
             <div id="vom-results-panel">
