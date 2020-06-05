@@ -20,7 +20,7 @@
 }
 
 #vom-results-panel {
-  grid-area: vom-results-panel;
+  width: 100%;
 }
 
 #vom-results-table {

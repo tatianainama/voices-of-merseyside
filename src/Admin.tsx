@@ -205,12 +205,6 @@ class Admin extends React.Component<{}, AdminState> {
       }
     }).then(response => {
       const _data = response.data.map((result, index) => {
-        // let group = new Group({
-        //   data: {
-        //     ...result.personalInformation,
-        //     id: result.id
-        //   }
-        // });
         const item = {
           ...result,
           canvas: result.canvas.map((item, i) => {
@@ -221,16 +215,13 @@ class Admin extends React.Component<{}, AdminState> {
             };
             const _path = mkPath(item.path, index, canvas.view.size.width / result.canvasSize.width, pathData);
             const _text = mkPathLabel(`${item.form.name} (${i})`, _path);
-            // group.addChildren([_path, _text]);
             return {
               path: _path,
               label: _text,
               form: item.form
             }
           }),
-          // group: group,
         };
-        // canvas.project.activeLayer.addChild(group);
         return item;
       })
       
@@ -265,10 +256,16 @@ class Admin extends React.Component<{}, AdminState> {
           }
         }).every(identity);
         if (matches) {
-          // result.group.visible = true;
+          result.canvas.forEach(({label, path}) => {
+            label.visible = true;
+            path.visible = true;
+          })
           return true
         } else {
-          // result.group.visible = false;
+          result.canvas.forEach(({label, path}) => {
+            label.visible = false;
+            path.visible = false;
+          })
           return false;
         }
       }
@@ -282,19 +279,28 @@ class Admin extends React.Component<{}, AdminState> {
   focusPath = (id: number) => {
     this.state.data.forEach(result => {
       if (result.id === id) {
-        // result.group.visible = true;
+        result.canvas.forEach(({label, path}) => {
+          label.visible = true;
+          path.visible = true;
+        })
         this.setState({
           focusedResponse: result
         })
       } else {
-        // result.group.visible = false;
+        result.canvas.forEach(({label, path}) => {
+          label.visible = false;
+          path.visible = false;
+        })
       }
     });
   }
 
   clearFocus = () => {
     this.state.data.forEach(result => {
-      // result.group.visible = true;
+      result.canvas.forEach(({label, path}) => {
+        label.visible = true;
+        path.visible = true;
+      })
       this.setState({
         focusedResponse: undefined
       })
@@ -338,20 +344,18 @@ class Admin extends React.Component<{}, AdminState> {
                 ) : null
               }
             </div>
+            {
+              this.state.focusedResponse ? (
+                <div id="vom-results-panel">
+                  <div id="vom-focused-result" className="mt-3">
+                    <h4>Showing:</h4>
+                    <ViewResponse response={this.state.focusedResponse}/>
+                  </div>
+                </div>
+              ) : null
+            }
           </div>
           <div id="vom-results">
-            <div id="vom-results-panel">
-              <div id="vom-focused-result" className="mt-3">
-                {
-                  this.state.focusedResponse !== undefined && (
-                    <>
-                      <h4>Showing:</h4>
-                      <ViewResponse response={this.state.focusedResponse}/>
-                    </>
-                  )
-                }
-              </div>
-            </div>
             <div id="vom-results-table">
               <h4>Results</h4>
               <ResultsTable
