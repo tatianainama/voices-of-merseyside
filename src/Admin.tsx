@@ -169,7 +169,9 @@ class Admin extends React.Component<{}, AdminState> {
         path.closePath();
         path.simplify();
         const items = canvas.project.activeLayer.getItems({
-          overlapping: path.bounds,
+          match: (value: paper.Item) => {
+            return path.intersects(value)
+          },
           class: Path,
         });
         const ids = items.map(i => i.id);
@@ -326,7 +328,6 @@ class Admin extends React.Component<{}, AdminState> {
           </div>
           <div className="vom-canvii">
             <canvas id="vom-admin-canvas"></canvas>
-            {/* <Heatmap data={this.state.data}></Heatmap> */}
             <div className="vom-selected-data">
               {
                 this.state.selectedArea ? (
@@ -436,8 +437,8 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
       }
     } : totals;
   }, { ...init }) || init)
-  
-  const tot = items.length - 1;
+
+  const tot = items.length;
   return (
     <>
       <Table bordered>
