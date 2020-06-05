@@ -13,7 +13,7 @@
 }
 
 #vom-admin-canvas {
-  width: 30%!important;
+  width: 40%!important;
   justify-self: center;
   grid-area: vom-admin-canvas;
   border: 1px solid rgba(0, 0, 0, 0.1);
