@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table, ListGroup, ListGroupItem } from 'reactstrap';
-import Paper, { Path, PaperScope, Point, Group, Color } from 'paper';
+import Paper, { Path, PaperScope, Point, Raster, Color } from 'paper';
 import { without, append, isNil, identity, includes, is } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import FileDownload from 'js-file-download';
+import map from './merseyside-nobg-white.png';
 import './Admin.css';
 
 const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
@@ -128,39 +129,25 @@ class Admin extends React.Component<{}, AdminState> {
     };
   }
 
-  // mkPathGroup = (data: OriginalCanvasData[], index: number, canvas: paper.PaperScope, originalCanvas: { width: number, height: number}) => {
-  //   const _data = data.reduce<(paper.Path|paper.Item)[]>((group, value, i) => {
-  //     const _path = mkPath(value.path, index, canvas.view.viewSize.width / originalCanvas.width, value.form);
-  //     const _text = mkPathLabel(`${value.form.name} (${i})`, _path);
-  //     return [
-  //       ...group,
-  //       _path,
-  //       _text,
-  //     ]
-  //   }, []);
-  //   const group = new Group(_data);
-  //   return group;
-  // }
-
-
   addPoint = (canvas: paper.PaperScope) => (event: any) => {
-    if(this.state.path) {
-      this.state.path.remove();
+    if(this.state.path === undefined) {
+      let path = new canvas.Path({
+        strokeColor: new Color('red'),
+        strokeWidth: 5,
+      });
+      path.bringToFront();
+      path.add(event.point);
+      this.setState({ path });
     }
-    let path = new canvas.Path({
-      strokeColor: new Color('red'),
-      strokeWidth: 5,
-    });
-    path.bringToFront();
-    path.add(event.point);
-    this.setState({ path });
   }
 
   mkDrawingTool = (canvas: paper.PaperScope) => {
     let Tool = new canvas.Tool();
     Tool.onMouseDown = this.addPoint(canvas);
     Tool.onMouseDrag = (event: any) => {
-      this.state.path?.add(event.point)
+      if (this.state.path && this.state.selectedArea === undefined) {
+        this.state.path?.add(event.point)
+      }
     };
     Tool.onMouseUp = () => {
       const { path } = this.state;
@@ -175,7 +162,6 @@ class Admin extends React.Component<{}, AdminState> {
           class: Path,
         });
         const ids = items.map(i => i.id);
-        
         this.state.data.forEach(result => {
           result.canvas.forEach(({ path, label }) => {
             if (includes(path.id, ids)) {
@@ -187,9 +173,8 @@ class Admin extends React.Component<{}, AdminState> {
           })
         })
         this.setState({
-          selectedArea: items
+          selectedArea: items || []
         })
-        // this.showPathDrawings(items);
       }
     }
   }
@@ -209,7 +194,7 @@ class Admin extends React.Component<{}, AdminState> {
           ...result,
           canvas: result.canvas.map((item, i) => {
             const pathData: ShapeData = {
-              id: index,
+              id: result.id,
               ...result.personalInformation,
               ...item.form
             };
@@ -225,6 +210,13 @@ class Admin extends React.Component<{}, AdminState> {
         return item;
       })
       
+      const raster = new Raster(map);
+      raster.onLoad = () => {
+        raster.position = canvas.view.center;
+        raster.size = canvas.view.viewSize;
+        raster.bringToFront();
+      }
+
       this.setState({
         canvas,
         original: _data,
@@ -301,9 +293,23 @@ class Admin extends React.Component<{}, AdminState> {
         label.visible = true;
         path.visible = true;
       })
-      this.setState({
-        focusedResponse: undefined
+    })
+    this.setState({
+      focusedResponse: undefined
+    })
+  }
+
+  clearDrawing = () => {
+    this.state.data.forEach(result => {
+      result.canvas.forEach(({label, path}) => {
+        label.visible = true;
+        path.visible = true;
       })
+    });
+    this.state.path?.remove();
+    this.setState({
+      path: undefined,
+      selectedArea: undefined,
     })
   }
 
@@ -338,7 +344,9 @@ class Admin extends React.Component<{}, AdminState> {
               {
                 this.state.selectedArea ? (
                   <>
-                    <p>drawings in area: <Badge color="info">{this.state.selectedArea.length}</Badge></p>
+                    <div>
+                      <p>drawings in area: <Badge color="info">{this.state.selectedArea.length}</Badge> <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge></p>
+                    </div>
                     <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
                   </>
                 ) : null
@@ -358,11 +366,19 @@ class Admin extends React.Component<{}, AdminState> {
           <div id="vom-results">
             <div id="vom-results-table">
               <h4>Results</h4>
-              <ResultsTable
-                data={this.state.data}
-                focusPath={this.focusPath}
-                clearFocus={this.clearFocus}
-              />
+              {
+                this.state.selectedArea ? (
+                  <DrawingsTable
+                    items={this.state.selectedArea}
+                  />
+                ) : (
+                  <ResultsTable
+                    data={this.state.data}
+                    focusPath={this.focusPath}
+                    clearFocus={this.clearFocus}
+                  />
+                )
+              }
             </div>
           </div>
         </Container>
@@ -418,7 +434,7 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
       '4': 0
     }
   };
-  const [totals, setTotals] = useState<SelectedAreaTotals>(items.reduce((totals, item) => {
+  const [totals] = useState<SelectedAreaTotals>(items.reduce((totals, item) => {
     const data = item.data as ShapeData;
     const lvlEd = data.levelEducation ? data.levelEducation.reduce((tot, lvl) => {
       return {
@@ -442,13 +458,12 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
     } : totals;
   }, { ...init }) || init)
 
-  const tot = items.length;
   return (
     <>
+      <h6>Age</h6>
       <Table bordered>
         <thead>
           <tr>
-            <th>total</th>
             <th>16-17</th>
             <th>18-25</th>
             <th>26-45</th>
@@ -459,17 +474,16 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
         </thead>
         <tbody>
           <tr>
-            <td>{tot}</td>
             { Object.keys(totals.age).map((age, key) => (
               <td key={key}>{totals.age[age]}</td>
             ))}
           </tr>
         </tbody>
       </Table>
+      <h6>Gender</h6>
       <Table bordered>
         <thead>
           <tr>
-            <th>total</th>
             <th>female</th>
             <th>male</th>
             <th>other</th>
@@ -477,7 +491,6 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
         </thead>
         <tbody>
           <tr>
-            <td>{tot}</td>
             {
               Object.keys(totals.gender).map((gender, key) => (
                 <td key={key}>{totals.gender[gender]}</td>
@@ -486,10 +499,10 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
           </tr>
         </tbody>
       </Table>
+      <h6>Level of Education</h6>
       <Table bordered>
         <thead>
           <tr>
-            <th>total</th>
             <th>high school or lower</th>
             <th>bachelors</th>
             <th>masters</th>
@@ -498,7 +511,6 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
         </thead>
         <tbody>
           <tr>
-            <td>{tot}</td>
             {
               Object.keys(totals.levelEducation).map((levelEducation, key) => (
                 <td key={key}>{totals.levelEducation[levelEducation]}</td>
@@ -516,6 +528,57 @@ type TableProps = {
   focusPath: (id: number) => void,
   clearFocus: () => void,
 };
+
+const DrawingsTable: React.FunctionComponent<{items: paper.Item[]}> = ({ items }) => {
+  return (
+    <Table bordered >
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>age</th>
+          <th>G</th>
+          <th>education</th>
+          <th>birth place</th>
+          <th>current place</th>
+          <th>NN</th>
+          <th>name</th>
+          <th>example</th>
+          <th>associations</th>
+          <th>C</th>
+          <th>F</th>
+          <th>P</th>
+          <th>T</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          items.map(({ data }, key) => {
+            const d = data as ShapeData;
+            return (
+              <tr key={key}>
+                  <td>{d.id}</td>
+                  <td>{VALUES.AGE[d.age]}</td>
+                  <td>{d.gender[0]}</td>
+                  <td>{d.levelEducation.map(e => VALUES.EDUCATION[e]).join(', ')}</td>
+                  <td>{d.birthPlace}</td>
+                  <td>{d.currentPlace}</td>
+                  <td>{VALUES.NON_NATIVE[d.nonNative]  || '-'}</td>
+                  <td>{d.name}</td>
+                  <td>{d.soundExample || '-'}</td>
+                  <td>{d.associations.join(', ')}</td>
+                  <td>{d.correctness}</td>
+                  <td>{d.friendliness}</td>
+                  <td>{d.pleasantness}</td>
+                  <td>{d.trustworthiness}</td>
+              </tr>
+            )
+          })
+        }
+      </tbody>
+
+    </Table>
+  )
+}
 
 const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, clearFocus }) => {
   const [ focused, setFocused ] = useState<number>();
