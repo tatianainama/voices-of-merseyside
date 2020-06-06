@@ -328,6 +328,22 @@ class Admin extends React.Component<{}, AdminState> {
     })
   }
 
+  hideDrawing = (item: paper.Item) => {
+    const { selectedArea } = this.state;
+    if (selectedArea) {
+      const newSelection = selectedArea.filter(i => {
+        if (item.id === i.id) {
+          i.visible = false;
+          return false;
+        } else {
+          return true;
+        }
+      });
+      this.setState({
+        selectedArea: newSelection
+      })
+    }
+  }
   downloadData = () => {
     Axios.get(`${BACKEND}/csv`, {
       headers: {
@@ -415,6 +431,7 @@ class Admin extends React.Component<{}, AdminState> {
                   <DrawingsTable
                     items={this.state.selectedArea}
                     focusResponse={this.focuseDrawResponse}
+                    hideResponse={this.hideDrawing}
                   />
                 ) : (
                   <ResultsTable
@@ -574,12 +591,17 @@ type TableProps = {
   clearFocus: () => void,
 };
 
-const DrawingsTable: React.FunctionComponent<{items: paper.Item[], focusResponse: (i: ShapeData) => void}> = ({ items, focusResponse }) => {
+const DrawingsTable: React.FunctionComponent<{
+  items: paper.Item[],
+  focusResponse: (i: ShapeData) => void,
+  hideResponse: (i: paper.Item) => void
+}> = ({ items, focusResponse, hideResponse }) => {
   const [focused, setFocused] = useState<{id?: number, shapeId?: number}>({id: undefined, shapeId: undefined});
   return (
     <Table bordered >
       <thead>
         <tr>
+          <th></th>
           <th>#</th>
           <th>age</th>
           <th>G</th>
@@ -598,8 +620,8 @@ const DrawingsTable: React.FunctionComponent<{items: paper.Item[], focusResponse
       </thead>
       <tbody>
         {
-          items.map(({ data }, key) => {
-            const d = data as ShapeData;
+          items.map((item, key) => {
+            const d = item.data as ShapeData;
             return d.gender ? (
               <tr 
                 key={key}
@@ -612,6 +634,7 @@ const DrawingsTable: React.FunctionComponent<{items: paper.Item[], focusResponse
                 }}
                 className={(focused.id === d.id && focused.shapeId === d.shapeId) ? 'data-focused' : ''}
               >
+                <td><Badge href="#" onClick={() => { hideResponse(item) }}>X</Badge></td>
                 <td>{d.id}</td>
                 <td>{VALUES.AGE[d.age] || ''}</td>
                 <td>{d.gender[0] || ''}</td>
