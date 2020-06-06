@@ -23,8 +23,15 @@
   width: 100%;
 }
 
+#vom-results {
+  overflow-x: scroll;
+  width: 100%;
+  margin-left: 1rem;
+}
+
 #vom-results-table {
-  grid-area: vom-results-table;
+  width: 100%;
+  overflow-y: scroll;
 }
 
 #vom-results-filters h6 {

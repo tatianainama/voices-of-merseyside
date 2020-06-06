@@ -69,6 +69,7 @@ type AdminState = {
   original: StateData[],
   data: StateData[],
   canvas?: paper.PaperScope,
+  height: number,
   focusedResponse?: StateData,
   path?: paper.Path,
   selectedArea?: paper.Item[],
@@ -125,6 +126,7 @@ class Admin extends React.Component<{}, AdminState> {
   constructor(props: any) {
     super(props);
     this.state = {
+      height: 100,
       canvas: undefined,
       original: [],
       data: [],
@@ -194,7 +196,8 @@ class Admin extends React.Component<{}, AdminState> {
   componentDidMount = () => {
     const canvas = new PaperScope();
     canvas.setup('vom-admin-canvas');
-    canvas.view.viewSize.height = canvas.view.size.width * 1.25;
+    const height = canvas.view.size.width * 1.25;
+    canvas.view.viewSize.height = height;
     this.mkDrawingTool(canvas);
     Axios.get<Result[]>(BACKEND, {
       headers: {
@@ -232,6 +235,7 @@ class Admin extends React.Component<{}, AdminState> {
 
       this.setState({
         canvas,
+        height,
         original: _data,
         data: _data,
       })
@@ -376,6 +380,7 @@ class Admin extends React.Component<{}, AdminState> {
         this.state.focusedDrawResponse.shape.selected = false;
         // eslint-disable-next-line react/no-direct-mutation-state
         this.state.focusedDrawResponse.label.visible = false;
+        this.state.focusedDrawResponse.shape.sendToBack();
       }
       this.setState({
         focusedDrawResponse: newFocused
@@ -400,49 +405,52 @@ class Admin extends React.Component<{}, AdminState> {
           </div>
           <div className="vom-canvii">
             <canvas id="vom-admin-canvas"></canvas>
-            <div className="vom-selected-data">
-              {
-                this.state.selectedArea ? (
-                  <>
-                    <div>
+            <div id="vom-results">
+              <h4>Results</h4>
+              <div id="vom-results-table" style={{height: this.state.height}}>
+                {
+                  this.state.selectedArea ? (
+                    <>
                       <p>drawings in area: <Badge color="info">{this.state.selectedArea.length}</Badge> <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge></p>
-                    </div>
-                    <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
-                  </>
-                ) : null
-              }
+                      <DrawingsTable
+                        items={this.state.selectedArea}
+                        focusResponse={this.focuseDrawResponse}
+                        hideResponse={this.hideDrawing}
+                      />
+                    </>
+                  ) : (
+                    <ResultsTable
+                      data={this.state.data}
+                      focusPath={this.focusPath}
+                      clearFocus={this.clearFocus}
+                    />
+                  )
+                }
+              </div>
             </div>
+          </div>
+          <div className="vom-selected-data">
             {
-              this.state.focusedResponse ? (
-                <div id="vom-results-panel">
-                  <div id="vom-focused-result" className="mt-3">
-                    <h4>Showing:</h4>
-                    <ViewResponse response={this.state.focusedResponse}/>
+              this.state.selectedArea ? (
+                <>
+                  <div>
+                    
                   </div>
-                </div>
+                  <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
+                </>
               ) : null
             }
           </div>
-          <div id="vom-results">
-            <div id="vom-results-table">
-              <h4>Results</h4>
-              {
-                this.state.selectedArea ? (
-                  <DrawingsTable
-                    items={this.state.selectedArea}
-                    focusResponse={this.focuseDrawResponse}
-                    hideResponse={this.hideDrawing}
-                  />
-                ) : (
-                  <ResultsTable
-                    data={this.state.data}
-                    focusPath={this.focusPath}
-                    clearFocus={this.clearFocus}
-                  />
-                )
-              }
-            </div>
-          </div>
+          {
+            this.state.focusedResponse ? (
+              <div id="vom-results-panel">
+                <div id="vom-focused-result" className="mt-3">
+                  <h4>Showing:</h4>
+                  <ViewResponse response={this.state.focusedResponse}/>
+                </div>
+              </div>
+            ) : null
+          }
         </Container>
       </div>
     )
