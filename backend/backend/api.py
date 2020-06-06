@@ -30,12 +30,33 @@ class Payload(Resource):
 
 
 class CSVExport(Resource):
-    def get(self):
+
+    def _send_csv(self, rows):
         fname = 'voices-of-merseyside.csv'
         with open(fname, 'w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(headers)
-            for entry in PayloadModel.query.order_by("id"):
-                for subentry in map_entry_to_rows(entry.data, entry.id):
-                    writer.writerow(subentry)
+            writer.writerows(rows)
         return send_from_directory(os.getcwd(), fname, as_attachment=True)
+
+    def get(self):
+        rows = []
+        for entry in PayloadModel.query.order_by("id"):
+            for subentry in map_entry_to_rows(entry.data, entry.id):
+                rows.append(subentry)
+
+        return self._send_csv(rows)
+
+    def post(self):
+        data = request.get_json()
+        if data is None:
+            return make_response('', 400)
+        rows = []
+
+        for item in data:
+            entry = PayloadModel.query.get(item['id'])
+            shape_idx = item['shapeId']
+            subentries = list(map_entry_to_rows(entry.data, entry.id))
+            rows.append(subentries[shape_idx])
+
+        return self._send_csv(rows)
