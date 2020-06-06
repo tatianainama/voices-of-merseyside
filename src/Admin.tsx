@@ -50,7 +50,8 @@ interface FormPath {
 }
 
 interface ShapeData extends FormPath, PersonalInformation {
-  id: number
+  shapeId: number,
+  id: number,
 }
 
 type OriginalCanvasData = {
@@ -81,7 +82,7 @@ const mkPathLabel = (pathName: string, path: paper.Path) => {
     fontSize: '16px',
     point: path.bounds.center,
     content: pathName,
-    visible: false
+    visible: true
   })
 }
 
@@ -161,7 +162,7 @@ class Admin extends React.Component<{}, AdminState> {
         class: Path,
       });
       items.forEach(item => {
-        item.visible = true
+        item.visible = true;
       });
       this.setState({
         selectedArea: items || []
@@ -171,8 +172,9 @@ class Admin extends React.Component<{}, AdminState> {
 
   toggleDrawings = (data: StateData[], visibility: boolean) => {
     data.forEach(result => {
-      result.canvas.forEach(({ path }) => {
+      result.canvas.forEach(({ path, label }) => {
         path.visible = visibility;
+        label.visible = visibility;
       })
     })
   }
@@ -200,6 +202,7 @@ class Admin extends React.Component<{}, AdminState> {
           canvas: result.canvas.map((item, i) => {
             const pathData: ShapeData = {
               id: result.id,
+              shapeId: i,
               ...result.personalInformation,
               ...item.form
             };
@@ -253,13 +256,15 @@ class Admin extends React.Component<{}, AdminState> {
           }
         }).every(identity);
         if (matches) {
-          result.canvas.forEach(({ path}) => {
+          result.canvas.forEach(({ path, label }) => {
             path.visible = true;
+            label.visible = true;
           })
           return true
         } else {
-          result.canvas.forEach(({path}) => {
+          result.canvas.forEach(({path, label}) => {
             path.visible = false;
+            label.visible = false;
           })
           return false;
         }
@@ -274,15 +279,17 @@ class Admin extends React.Component<{}, AdminState> {
   focusPath = (id: number) => {
     this.state.data.forEach(result => {
       if (result.id === id) {
-        result.canvas.forEach(({path}) => {
+        result.canvas.forEach(({path, label}) => {
           path.visible = true;
+          label.visible = true;
         })
         this.setState({
           focusedResponse: result
         })
       } else {
-        result.canvas.forEach(({ path}) => {
+        result.canvas.forEach(({ path, label}) => {
           path.visible = false;
+          label.visible = false;
         })
       }
     });
@@ -290,8 +297,8 @@ class Admin extends React.Component<{}, AdminState> {
 
   clearFocus = () => {
     this.state.data.forEach(result => {
-      result.canvas.forEach(({path}) => {
-        
+      result.canvas.forEach(({path, label}) => {
+        label.visible = true;
         path.visible = true;
       })
     })
@@ -302,8 +309,9 @@ class Admin extends React.Component<{}, AdminState> {
 
   clearDrawing = () => {
     this.state.data.forEach(result => {
-      result.canvas.forEach(({path}) => {
+      result.canvas.forEach(({path, label}) => {
         path.visible = true;
+        label.visible = true;
       })
     });
     this.state.path?.remove();
