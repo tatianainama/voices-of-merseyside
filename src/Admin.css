@@ -71,7 +71,8 @@
   border-top: 2px solid #a0a2a5;
 }
 
-.vom-table-results tr.data-focused {
+.vom-table-results tr.data-focused,
+#vom-results-table tr.data-focused {
   background-color: #17a2b845 !important;
 }
 

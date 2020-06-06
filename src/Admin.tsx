@@ -71,7 +71,11 @@ type AdminState = {
   canvas?: paper.PaperScope,
   focusedResponse?: StateData,
   path?: paper.Path,
-  selectedArea?: paper.Item[]
+  selectedArea?: paper.Item[],
+  focusedDrawResponse?: {
+    shape: paper.Item,
+    label: paper.TextItem
+  },
 };
 
 const mkPathLabel = (pathName: string, path: paper.Path) => {
@@ -126,7 +130,8 @@ class Admin extends React.Component<{}, AdminState> {
       data: [],
       focusedResponse: undefined,
       path: undefined,
-      selectedArea: undefined
+      selectedArea: undefined,
+      focusedDrawResponse: undefined,
     };
   }
 
@@ -312,12 +317,14 @@ class Admin extends React.Component<{}, AdminState> {
       result.canvas.forEach(({path, label}) => {
         path.visible = true;
         label.visible = true;
+        path.selected = false;
       })
     });
     this.state.path?.remove();
     this.setState({
       path: undefined,
       selectedArea: undefined,
+      focusedDrawResponse: undefined
     })
   }
 
@@ -329,6 +336,35 @@ class Admin extends React.Component<{}, AdminState> {
     }).then(response => {
       FileDownload(response.data, 'voices-of-merseyside.csv')
     })
+  }
+
+  focuseDrawResponse = (item: ShapeData) => {
+    const focused = this.state.data.find(response => response.id === item.id);
+    let newFocused;
+    if (focused) {
+      focused.canvas.forEach(draw => {
+        if (draw.path.data.shapeId === item.shapeId) {
+          draw.path.bringToFront();
+          draw.label.visible = true;
+          draw.label.bringToFront();
+          draw.path.selected = true;
+          draw.path.selectedColor = new Color('red');
+          newFocused = {
+            shape: draw.path,
+            label: draw.label
+          }
+        }
+      });
+      if (this.state.focusedDrawResponse) {
+        // eslint-disable-next-line react/no-direct-mutation-state
+        this.state.focusedDrawResponse.shape.selected = false;
+        // eslint-disable-next-line react/no-direct-mutation-state
+        this.state.focusedDrawResponse.label.visible = false;
+      }
+      this.setState({
+        focusedDrawResponse: newFocused
+      })
+    }
   }
 
   render() {
@@ -378,6 +414,7 @@ class Admin extends React.Component<{}, AdminState> {
                 this.state.selectedArea ? (
                   <DrawingsTable
                     items={this.state.selectedArea}
+                    focusResponse={this.focuseDrawResponse}
                   />
                 ) : (
                   <ResultsTable
@@ -537,7 +574,8 @@ type TableProps = {
   clearFocus: () => void,
 };
 
-const DrawingsTable: React.FunctionComponent<{items: paper.Item[]}> = ({ items }) => {
+const DrawingsTable: React.FunctionComponent<{items: paper.Item[], focusResponse: (i: ShapeData) => void}> = ({ items, focusResponse }) => {
+  const [focused, setFocused] = useState<{id?: number, shapeId?: number}>({id: undefined, shapeId: undefined});
   return (
     <Table bordered >
       <thead>
@@ -563,21 +601,31 @@ const DrawingsTable: React.FunctionComponent<{items: paper.Item[]}> = ({ items }
           items.map(({ data }, key) => {
             const d = data as ShapeData;
             return d.gender ? (
-              <tr key={key}>
-                  <td>{d.id}</td>
-                  <td>{VALUES.AGE[d.age] || ''}</td>
-                  <td>{d.gender[0] || ''}</td>
-                  <td>{d.levelEducation.map(e => VALUES.EDUCATION[e] || '').join(', ')}</td>
-                  <td>{d.birthPlace}</td>
-                  <td>{d.currentPlace}</td>
-                  <td>{VALUES.NON_NATIVE[d.nonNative]  || '-'}</td>
-                  <td>{d.name}</td>
-                  <td>{d.soundExample || '-'}</td>
-                  <td>{d.associations.join(', ')}</td>
-                  <td>{d.correctness}</td>
-                  <td>{d.friendliness}</td>
-                  <td>{d.pleasantness}</td>
-                  <td>{d.trustworthiness}</td>
+              <tr 
+                key={key}
+                onClick={() => { 
+                  focusResponse(d);
+                  setFocused({
+                    id: d.id,
+                    shapeId: d.shapeId
+                  })
+                }}
+                className={(focused.id === d.id && focused.shapeId === d.shapeId) ? 'data-focused' : ''}
+              >
+                <td>{d.id}</td>
+                <td>{VALUES.AGE[d.age] || ''}</td>
+                <td>{d.gender[0] || ''}</td>
+                <td>{d.levelEducation.map(e => VALUES.EDUCATION[e] || '').join(', ')}</td>
+                <td>{d.birthPlace}</td>
+                <td>{d.currentPlace}</td>
+                <td>{VALUES.NON_NATIVE[d.nonNative]  || '-'}</td>
+                <td>{d.name}</td>
+                <td>{d.soundExample || '-'}</td>
+                <td>{d.associations.join(', ')}</td>
+                <td>{d.correctness}</td>
+                <td>{d.friendliness}</td>
+                <td>{d.pleasantness}</td>
+                <td>{d.trustworthiness}</td>
               </tr>
             ) : null
           })
