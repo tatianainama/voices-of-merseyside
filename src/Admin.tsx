@@ -358,6 +358,20 @@ class Admin extends React.Component<{}, AdminState> {
     })
   }
 
+  downloadResultsData = () => {
+    const data = this.state.selectedArea?.map(item => {
+      return {
+        id: item.data.id,
+        shapeId: item.data.shapeId
+      }
+    });
+    Axios.post(`${BACKEND}/csv`, data).then(response => {
+      FileDownload(response.data, 'vom-drawing-results.csv');
+    }).catch(e => {
+      alert('error downloading the data, please try again')
+    })
+  }
+
   focuseDrawResponse = (item: ShapeData) => {
     const focused = this.state.data.find(response => response.id === item.id);
     let newFocused;
@@ -411,7 +425,9 @@ class Admin extends React.Component<{}, AdminState> {
                 {
                   this.state.selectedArea ? (
                     <>
-                      <p>drawings in area: <Badge color="info">{this.state.selectedArea.length}</Badge> <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge></p>
+                      <p>drawings in area: 
+                        <Badge color="info">{this.state.selectedArea.length}</Badge> <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge> <Badge color="success" href="#" onClick={() => this.downloadResultsData() }>download results</Badge>
+                      </p>
                       <DrawingsTable
                         items={this.state.selectedArea}
                         focusResponse={this.focuseDrawResponse}
