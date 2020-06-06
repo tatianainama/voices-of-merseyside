@@ -62,7 +62,6 @@ type CanvasData = {
   form: FormPath,
   path: paper.Path,
   label: paper.PointText
-  // path: paper.Group
 };
 
 type AdminState = {
@@ -81,7 +80,8 @@ const mkPathLabel = (pathName: string, path: paper.Path) => {
     fontWeight: 'bold',
     fontSize: '16px',
     point: path.bounds.center,
-    content: pathName
+    content: pathName,
+    visible: false
   })
 }
 
@@ -129,8 +129,9 @@ class Admin extends React.Component<{}, AdminState> {
     };
   }
 
-  addPoint = (canvas: paper.PaperScope) => (event: any) => {
+  createPath = (canvas: paper.PaperScope) => (event: any) => {
     if(this.state.path === undefined) {
+      this.toggleDrawings(this.state.data, false);
       let path = new canvas.Path({
         strokeColor: new Color('red'),
         strokeWidth: 5,
@@ -141,42 +142,46 @@ class Admin extends React.Component<{}, AdminState> {
     }
   }
 
+  addPoint = (event: any) => {
+    if (this.state.path && this.state.selectedArea === undefined) {
+      this.state.path?.add(event.point)
+    }
+  };
+
+  getItems = (canvas: paper.PaperScope) => () => {
+    const { path, selectedArea } = this.state;
+    if (path && !selectedArea) {
+      path.add(path.firstSegment);
+      path.closePath();
+      path.simplify();
+      const items = canvas.project.activeLayer.getItems({
+        match: (value: paper.Item) => {
+          return value.data.id && path.intersects(value);
+        },
+        class: Path,
+      });
+      items.forEach(item => {
+        item.visible = true
+      });
+      this.setState({
+        selectedArea: items || []
+      })
+    }
+  }
+
+  toggleDrawings = (data: StateData[], visibility: boolean) => {
+    data.forEach(result => {
+      result.canvas.forEach(({ path }) => {
+        path.visible = visibility;
+      })
+    })
+  }
+
   mkDrawingTool = (canvas: paper.PaperScope) => {
     let Tool = new canvas.Tool();
-    Tool.onMouseDown = this.addPoint(canvas);
-    Tool.onMouseDrag = (event: any) => {
-      if (this.state.path && this.state.selectedArea === undefined) {
-        this.state.path?.add(event.point)
-      }
-    };
-    Tool.onMouseUp = () => {
-      const { path } = this.state;
-      if (path) {
-        path.add(path.firstSegment);
-        path.closePath();
-        path.simplify();
-        const items = canvas.project.activeLayer.getItems({
-          match: (value: paper.Item) => {
-            return path.intersects(value)
-          },
-          class: Path,
-        });
-        const ids = items.map(i => i.id);
-        this.state.data.forEach(result => {
-          result.canvas.forEach(({ path, label }) => {
-            if (includes(path.id, ids)) {
-              path.visible = true;
-            } else {
-              path.visible = false;
-              label.visible = false;
-            }
-          })
-        })
-        this.setState({
-          selectedArea: items || []
-        })
-      }
-    }
+    Tool.onMouseDown = this.createPath(canvas);
+    Tool.onMouseDrag = this.addPoint;
+    Tool.onMouseUp = this.getItems(canvas);
   }
 
   componentDidMount = () => {
@@ -248,14 +253,12 @@ class Admin extends React.Component<{}, AdminState> {
           }
         }).every(identity);
         if (matches) {
-          result.canvas.forEach(({label, path}) => {
-            label.visible = true;
+          result.canvas.forEach(({ path}) => {
             path.visible = true;
           })
           return true
         } else {
-          result.canvas.forEach(({label, path}) => {
-            label.visible = false;
+          result.canvas.forEach(({path}) => {
             path.visible = false;
           })
           return false;
@@ -271,16 +274,14 @@ class Admin extends React.Component<{}, AdminState> {
   focusPath = (id: number) => {
     this.state.data.forEach(result => {
       if (result.id === id) {
-        result.canvas.forEach(({label, path}) => {
-          label.visible = true;
+        result.canvas.forEach(({path}) => {
           path.visible = true;
         })
         this.setState({
           focusedResponse: result
         })
       } else {
-        result.canvas.forEach(({label, path}) => {
-          label.visible = false;
+        result.canvas.forEach(({ path}) => {
           path.visible = false;
         })
       }
@@ -289,8 +290,8 @@ class Admin extends React.Component<{}, AdminState> {
 
   clearFocus = () => {
     this.state.data.forEach(result => {
-      result.canvas.forEach(({label, path}) => {
-        label.visible = true;
+      result.canvas.forEach(({path}) => {
+        
         path.visible = true;
       })
     })
@@ -301,8 +302,7 @@ class Admin extends React.Component<{}, AdminState> {
 
   clearDrawing = () => {
     this.state.data.forEach(result => {
-      result.canvas.forEach(({label, path}) => {
-        label.visible = true;
+      result.canvas.forEach(({path}) => {
         path.visible = true;
       })
     });
@@ -554,12 +554,12 @@ const DrawingsTable: React.FunctionComponent<{items: paper.Item[]}> = ({ items }
         {
           items.map(({ data }, key) => {
             const d = data as ShapeData;
-            return (
+            return d.gender ? (
               <tr key={key}>
                   <td>{d.id}</td>
-                  <td>{VALUES.AGE[d.age]}</td>
-                  <td>{d.gender[0]}</td>
-                  <td>{d.levelEducation.map(e => VALUES.EDUCATION[e]).join(', ')}</td>
+                  <td>{VALUES.AGE[d.age] || ''}</td>
+                  <td>{d.gender[0] || ''}</td>
+                  <td>{d.levelEducation.map(e => VALUES.EDUCATION[e] || '').join(', ')}</td>
                   <td>{d.birthPlace}</td>
                   <td>{d.currentPlace}</td>
                   <td>{VALUES.NON_NATIVE[d.nonNative]  || '-'}</td>
@@ -571,7 +571,7 @@ const DrawingsTable: React.FunctionComponent<{items: paper.Item[]}> = ({ items }
                   <td>{d.pleasantness}</td>
                   <td>{d.trustworthiness}</td>
               </tr>
-            )
+            ) : null
           })
         }
       </tbody>
