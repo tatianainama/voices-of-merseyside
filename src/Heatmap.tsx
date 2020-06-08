@@ -5,6 +5,7 @@ import FileSaver from 'file-saver';
 import map from './merseyside-nobg-white.png';
 
 import './Heatmap.css';
+import Axios from 'axios';
 
 const X_SEGMENTS = 12;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
@@ -15,6 +16,7 @@ input_start = 1,
 input_end = 5;
 const RANGE = (n: number) => output_start + ((output_end - output_start) / (input_end - input_start)) * (n - input_start);
 
+const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
 
 type Grid = Array<{
   area: paper.Path.Rectangle,
@@ -26,7 +28,9 @@ type HeatmapData = {
   correctness: number,
   friendliness: number,
   pleasantness: number,
-  trustworthiness: number
+  trustworthiness: number,
+  firstCategory: number,
+  secondCategory?:number
 }
 
 enum HeatmapType {
@@ -57,11 +61,6 @@ type FormPath = {
   trustworthiness: number
 }
 
-type OriginalCanvasData = {
-  form: FormPath,
-  path: string,
-}
-
 type Result = {
   personalInformation: PersonalInformation,
   canvas: {
@@ -72,8 +71,23 @@ type Result = {
   id: number,
 }
 
+type OriginalData = {
+  personalInformation: PersonalInformation,
+  canvas: {
+    form: FormPath,
+    path: string,
+    firstCategory: number,
+    secondCategory: number | ''
+  }[],
+  canvasSize: {
+    width: number,
+    height: number
+  },
+  email: string,
+  id: number,
+}
+
 type HeatmapProps = {
-  data: Result[],
 }
 
 type HeatmapState = {
@@ -122,8 +136,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     canvas.project.layers[0].addChild(_path);
   }
 
-  drawMapData = (data: Result[], canvas: paper.PaperScope) => {
-    canvas.project.layers[0]?.removeChildren();
+  drawMapData = (data: OriginalData[], canvas: paper.PaperScope) => {
     const _data = data.reduce<Array<HeatmapData>>((newData, result) => {
       return [
         ...newData,
@@ -134,8 +147,10 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
             friendliness: shape.form.friendliness,
             pleasantness: shape.form.pleasantness,
             trustworthiness: shape.form.trustworthiness,
+            firstCategory: shape.firstCategory,
+            secondCategory: shape.secondCategory === '' ? undefined : shape.secondCategory
           }
-          this.addshape(shape.path, data, canvas);
+          this.drawShape(shape.path, canvas.view.size.width / result.canvasSize.width, data)
           return data as HeatmapData;
         })
       ]
@@ -244,34 +259,24 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     const canvas = new PaperScope();
     canvas.setup('vom-heatmap-canvas');
     canvas.view.viewSize.height = canvas.view.size.width * 1.25;
-    const data = this.drawMapData(this.props.data, canvas);
-    const { grid, layer } = this.mkGrid(canvas, canvas.project.activeLayer);
-    this.changeHeatmapColor(HeatmapType.Friendliness, grid);
-    
-    this.setState({
-      data,
-      canvas,
-      grid,
-      heatmapLayer: layer,
-      heatmapType: HeatmapType.Friendliness,
-      mapLayer: this.showMap(canvas)
-    })
-  }
-
-  componentDidUpdate = (prev: HeatmapProps) => {
-    if (prev.data.length !== this.props.data.length) {
-      const canvas = this.state.canvas!;
-      const data = this.drawMapData(this.props.data, canvas);
-      this.state.heatmapLayer?.remove();
-      const { grid, layer } = this.mkGrid(canvas, canvas.project.layers[0]);
-      this.changeHeatmapColor(this.state.heatmapType, grid);
-      this.showMap(canvas);
+    Axios.get<OriginalData[]>(BACKEND, {
+      headers: {
+        'X-Token': 'secret-potato',
+      }
+    }).then(response => {
+      const data = this.drawMapData(response.data, canvas);
+      const { grid, layer } = this.mkGrid(canvas, canvas.project.activeLayer);
+      this.changeHeatmapColor(HeatmapType.Friendliness, grid);
+      
       this.setState({
+        data,
+        canvas,
         grid,
         heatmapLayer: layer,
-        data,
+        heatmapType: HeatmapType.Friendliness,
+        mapLayer: this.showMap(canvas)
       })
-    }
+    })
   }
 
   handleChangeColor = (e: React.ChangeEvent<HTMLInputElement>) => {

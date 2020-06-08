@@ -4,13 +4,13 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-import App, { ClosureNotice } from './App';
+import { ClosureNotice } from './App';
 import Admin from './Admin';
 import ConsentInformation from './Consent';
 import MoreInfo from './MoreInfo';
 import Heatmap from './Heatmap';
 import './App.css';
-import results from './results.json';
+import heatmap from './vom-cat.json';
 
 export const AppRouting = () => {
   return (
@@ -21,9 +21,8 @@ export const AppRouting = () => {
             <ClosureNotice></ClosureNotice>
           </Route>
           <Route path="/admin/heatmap">
-            {/* <Heatmap
-              data={results}
-            ></Heatmap> */}
+            <Heatmap
+            ></Heatmap>
           </Route>
           <Route path="/admin">
             <Admin></Admin>
