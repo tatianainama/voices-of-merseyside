@@ -11,10 +11,11 @@ const X_SEGMENTS = 12;
 const Y_SEGMENTS = X_SEGMENTS * 1.25;
 const MAX = 200;
 const output_start = 0,
-output_end = 240,
-input_start = 1,
-input_end = 5;
+      output_end = 240,
+      input_start = 1,
+      input_end = 5;
 const RANGE = (n: number) => output_start + ((output_end - output_start) / (input_end - input_start)) * (n - input_start);
+const OPACITY_RANGE = (n: number, inputEnd: number) => 0 + ((255 - 0) / (inputEnd)) * (n);
 
 const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
 
@@ -29,8 +30,8 @@ type HeatmapData = {
   friendliness: number,
   pleasantness: number,
   trustworthiness: number,
-  firstCategory: number,
-  secondCategory?:number
+  firstCategory: CategoryType,
+  secondCategory?: CategoryType
 }
 
 enum HeatmapType {
@@ -40,6 +41,30 @@ enum HeatmapType {
   Pleasantness = 'pleasantness',
   Trustworthiness = 'trustworthiness'
 }
+
+enum CategoryType {
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I
+}
+
+const CategoryTypeList: CategoryType[] = [
+  CategoryType.A,
+  CategoryType.B,
+  CategoryType.C,
+  CategoryType.D,
+  CategoryType.E,
+  CategoryType.F,
+  CategoryType.G,
+  CategoryType.H,
+  CategoryType.I
+];
 
 type PersonalInformation = {
   age: string,
@@ -90,6 +115,18 @@ type OriginalData = {
 type HeatmapProps = {
 }
 
+type CategoryAmount = {
+  [CategoryType.A]: number,
+  [CategoryType.B]: number,
+  [CategoryType.C]: number,
+  [CategoryType.D]: number,
+  [CategoryType.E]: number,
+  [CategoryType.F]: number,
+  [CategoryType.G]: number,
+  [CategoryType.H]: number,
+  [CategoryType.I]: number
+}
+
 type HeatmapState = {
   data: HeatmapData[],
   canvas?: paper.PaperScope,
@@ -97,10 +134,17 @@ type HeatmapState = {
   heatmapLayer: paper.Layer | undefined,
   mapLayer: paper.Layer | undefined,
   gridLayer: paper.Layer | undefined,
-  areaAmount: paper.TextItem | undefined,
-  heatmapType: HeatmapType,
+  heatmapType: HeatmapType | CategoryType,
+  categoryAmount: CategoryAmount
 }
 
+const CAT_AMOUNT = CategoryTypeList.reduce<CategoryAmount>((catAmount, cat) => {
+  return {
+    ...catAmount,
+    [cat]: 0
+  }
+  //@ts-ignore
+}, {});
 
 class Heatmap extends Component<HeatmapProps, HeatmapState> {
   
@@ -114,8 +158,8 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       heatmapLayer: undefined,
       mapLayer: undefined,
       gridLayer: undefined,
-      areaAmount: undefined,
       heatmapType: HeatmapType.Amount,
+      categoryAmount: {...CAT_AMOUNT}
     }
   }
   
@@ -137,6 +181,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
   }
 
   drawMapData = (data: OriginalData[], canvas: paper.PaperScope) => {
+    let categoriesCounter = { ...CAT_AMOUNT };
     const _data = data.reduce<Array<HeatmapData>>((newData, result) => {
       return [
         ...newData,
@@ -150,12 +195,19 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
             firstCategory: shape.firstCategory,
             secondCategory: shape.secondCategory === '' ? undefined : shape.secondCategory
           }
+          categoriesCounter[data.firstCategory] = categoriesCounter[data.firstCategory] + 1;
+          if (data.secondCategory) {
+            categoriesCounter[data.secondCategory] = categoriesCounter[data.secondCategory]
+          }
           this.drawShape(shape.path, canvas.view.size.width / result.canvasSize.width, data)
           return data as HeatmapData;
         })
       ]
     }, [])
-    return _data;
+    return {
+      data: _data,
+      categoryAmount: categoriesCounter
+    };
   }
   
   mkChunk = (xCount: number, yCount: number, parent: paper.Rectangle, group: paper.Group): {rectangle: paper.Rectangle, items: paper.Item[]}[] => {
@@ -223,6 +275,7 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
     }
   }
   
+
   changeHeatmapColor = (type: HeatmapType, grid: Grid) => {
     grid.forEach(({ area, items }) => {
       const color = this.mkFillColor(type, items);
@@ -264,17 +317,17 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
         'X-Token': 'secret-potato',
       }
     }).then(response => {
-      const data = this.drawMapData(response.data, canvas);
+      const { data, categoryAmount } = this.drawMapData(response.data, canvas);
       const { grid, layer } = this.mkGrid(canvas, canvas.project.activeLayer);
       this.changeHeatmapColor(HeatmapType.Friendliness, grid);
-      
       this.setState({
         data,
         canvas,
         grid,
+        categoryAmount,
         heatmapLayer: layer,
         heatmapType: HeatmapType.Friendliness,
-        mapLayer: this.showMap(canvas)
+        mapLayer: this.showMap(canvas),
       })
     })
   }
@@ -286,13 +339,36 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
       heatmapType
     });
   }
+
+  handleChangeColorByCat = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const type = parseInt(e.currentTarget.value) as unknown as CategoryType;
+    this.state.grid.forEach(({area, items}) => {
+      const xs = items.filter(i => i.data.firstCategory === type || i.data.secondCategory === type);
+      const opacity = OPACITY_RANGE(xs.length, this.state.categoryAmount[type]);
+      const color = new Color(`rgb(${opacity}, ${opacity}, ${opacity})`);
+      area.fillColor = color;
+      area.strokeColor = color;
+    });
+    this.setState({
+      heatmapType: type
+    })
+  }
   
+  heatmapByResponses = (type: HeatmapType | CategoryType): type is HeatmapType => {
+    return type === HeatmapType.Amount || type === HeatmapType.Correctness || type === HeatmapType.Friendliness || type === HeatmapType.Pleasantness || type === HeatmapType.Trustworthiness;
+  }
+
   render = () => (
     <div className="vom-heatmap">
       <div className="vom-heatmap-map">
         <canvas id="vom-heatmap-canvas"></canvas>
         {
-          this.state.heatmapType !== HeatmapType.Amount ? (
+          this.state.heatmapType === HeatmapType.Amount ? (
+            <div id="vom-heatmap-amount-range">
+              <div>1</div>
+              <div>200</div>
+            </div>
+          ) : this.heatmapByResponses(this.state.heatmapType) ? (
             <div id="vom-heatmap-range">
               <div>1</div>
               <div>2</div>
@@ -303,15 +379,15 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
           ) : (
             <div id="vom-heatmap-amount-range">
               <div>1</div>
-              <div>200</div>
+              <div>{this.state.categoryAmount[this.state.heatmapType]} </div>
             </div>
           )
         }
+        <Button size="sm" onClick={() => {this.saveAsImage()} }>download current map</Button>
       </div>
       <div className="vom-heatmap-actions">
         <FormGroup>
-          <Button size="sm" onClick={() => {this.saveAsImage()} }>download current map</Button>
-          <h4>Heatmap type</h4> 
+          <h5>Heatmap based on responses</h5> 
           <div>
             <CustomInput type="radio" id="heatmap-by-amount" name="by-amount" 
             label="by amount of responses"
@@ -343,6 +419,27 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
             checked={this.state.heatmapType === HeatmapType.Trustworthiness}
             onChange={ this.handleChangeColor }
             />
+          </div>
+        </FormGroup>
+      </div>
+      <div className="vom-heatmap-actions">
+        <FormGroup>
+          <h5>Heatmap based on categorization</h5> 
+          <div>
+            {
+              CategoryTypeList.map(category => (
+                <CustomInput
+                  key={category}
+                  type="radio"
+                  id={`heatmap-by-${category}`}
+                  name={`by-${category}`}
+                  label={`${category}`}
+                  value={category}
+                  checked={this.state.heatmapType === category}
+                  onChange={this.handleChangeColorByCat}
+                />
+              ))
+            }
           </div>
         </FormGroup>
       </div>

@@ -1,6 +1,12 @@
 
 .vom-heatmap {
-  width: 50%;
+  width: 100%;
+  display: flex;
+  padding: 1rem;
+}
+
+.vom-heatmap-map {
+  width: 30%;
 }
 
 .vom-heatmap #vom-heatmap-canvas {
@@ -15,6 +21,7 @@
   justify-content: space-between;
   font-weight: bold;
   border: 2px solid black;
+  margin-bottom: 0.5rem;
 }
 
 #vom-heatmap-range {
@@ -25,4 +32,8 @@
 #vom-heatmap-amount-range {
   background: rgb(0,0,0);
   background: linear-gradient(to right, #000000 1%,#ffffff 100%);
+}
+
+.vom-heatmap-actions {
+  padding: 0 1rem;
 }
