@@ -8,7 +8,7 @@ import FileDownload from 'js-file-download';
 import map from './merseyside-nobg-white.png';
 import './Admin.css';
 
-const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
+const BACKEND = process.env.REACT_APP_BACKEND || '/backend';
 
 type PersonalInformation = {
   age: AgeVal,
