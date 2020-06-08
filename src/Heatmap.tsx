@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Path, PaperScope, Point, Size, Rectangle, Color, Layer, Raster } from 'paper';
-import { Container, CustomInput, FormGroup, Row, Col, Button } from 'reactstrap';
+import { CustomInput, FormGroup, Button } from 'reactstrap';
 import FileSaver from 'file-saver';
 import map from './merseyside-nobg-white.png';
 

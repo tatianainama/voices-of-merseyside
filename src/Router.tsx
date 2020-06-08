@@ -10,7 +10,6 @@ import ConsentInformation from './Consent';
 import MoreInfo from './MoreInfo';
 import Heatmap from './Heatmap';
 import './App.css';
-import heatmap from './vom-cat.json';
 
 export const AppRouting = () => {
   return (
