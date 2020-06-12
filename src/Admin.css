@@ -12,8 +12,12 @@
   align-items: flex-start;
 }
 
-#vom-admin-canvas {
+.vom-admin-canvas-container {
   width: 40%!important;
+  position: relative;
+}
+
+#vom-admin-canvas {
   justify-self: center;
   grid-area: vom-admin-canvas;
   border: 1px solid rgba(0, 0, 0, 0.1);

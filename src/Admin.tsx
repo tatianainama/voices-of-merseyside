@@ -153,8 +153,8 @@ class Admin extends React.Component<{}, AdminState> {
     if(this.state.path === undefined) {
       this.toggleDrawings(this.state.data, false);
       let path = new canvas.Path({
-        strokeColor: new Color('red'),
-        strokeWidth: 5,
+        strokeColor: new Color('black'),
+        strokeWidth: 3,
       });
       path.bringToFront();
       path.add(event.point);
@@ -207,17 +207,6 @@ class Admin extends React.Component<{}, AdminState> {
       return {
         text: word,
         value: wordCounter[word]
-      }
-    });
-    return take(10, sort(descend(prop('value')), wordCloud));
-  }
-
-  mkWordCloud = (words: {[key:string]: number}) => {
-    const keys = Object.keys(words);
-    const wordCloud = keys.map(word => {
-      return {
-        text: word,
-        value: words[word]
       }
     });
     return take(10, sort(descend(prop('value')), wordCloud));
@@ -467,7 +456,39 @@ class Admin extends React.Component<{}, AdminState> {
             ></FilterPanel>
           </div>
           <div className="vom-canvii">
-            <canvas id="vom-admin-canvas"></canvas>
+            <div className="vom-admin-canvas-container">
+              <canvas id="vom-admin-canvas"></canvas>
+              {
+                this.state.path && this.state.selectedArea ? (
+                  <div className="vom-word-cloud"
+                    style={{
+                      width: this.state.path.bounds.width,
+                      height: this.state.path.bounds.height,
+                      position: 'absolute',
+                      top: this.state.path.bounds.top,
+                      left: this.state.path.bounds.left
+                    }}
+                  >
+                    <ReactWordcloud 
+                      options={{
+                        enableTooltip: true,
+                        deterministic: false,
+                        fontFamily: 'impact',
+                        fontSizes: [12, 20],
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                        rotations: 1,
+                        rotationAngles: [0, 0],
+                        scale: 'sqrt',
+                        spiral: 'archimedean',
+                        colors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'],
+                      }}
+                      words={this.state.wordCloud}
+                    />
+                  </div>
+                ) : null
+              }
+            </div>
             <div id="vom-results">
               <h4>Results</h4>
               <div id="vom-results-table" style={{height: this.state.height}}>
@@ -498,23 +519,6 @@ class Admin extends React.Component<{}, AdminState> {
             {
               this.state.selectedArea ? (
                 <>
-                  <div className="vom-word-cloud">
-                    <ReactWordcloud 
-                      options={{
-                        colors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'],
-                        enableTooltip: true,
-                        deterministic: false,
-                        fontFamily: 'impact',
-                        fontSizes: [12, 40],
-                        fontStyle: 'normal',
-                        fontWeight: 'normal',
-                        padding: 1,
-                        rotations: 1,
-                        rotationAngles: [0, 90],
-                      }}
-                      words={this.state.wordCloud}
-                    />
-                  </div>
                   <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
                 </>
               ) : null
