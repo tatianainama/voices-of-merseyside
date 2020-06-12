@@ -41,7 +41,7 @@ interface StateData {
   email: string
 };
 
-interface FormPath {
+interface OriginalFormPath {
   name: string,
   soundExample: string,
   associations: string[],
@@ -51,14 +51,28 @@ interface FormPath {
   trustworthiness: number
 }
 
+interface FormPath {
+  name: string,
+  soundExample: string,
+  associations: string[],
+  correctness: number,
+  friendliness: number,
+  pleasantness: number,
+  trustworthiness: number,
+  firstCategory: number,
+  secondCategory?: number
+}
+
 interface ShapeData extends FormPath, PersonalInformation {
   shapeId: number,
   id: number,
 }
 
 type OriginalCanvasData = {
-  form: FormPath,
+  form: OriginalFormPath,
   path: string,
+  firstCategory: number,
+  secondCategory: number | ''
 }
 
 type CanvasData = {
@@ -243,9 +257,14 @@ class Admin extends React.Component<{}, AdminState> {
         const item = {
           ...result,
           canvas: result.canvas.map((item, i) => {
+            const categories = {
+              firstCategory: item.firstCategory,
+              secondCategory: item.secondCategory === '' || item.secondCategory === undefined ? undefined : item.secondCategory, 
+            };
             const pathData: ShapeData = {
               id: result.id,
               shapeId: i,
+              ...categories,
               ...result.personalInformation,
               ...item.form
             };
@@ -254,7 +273,10 @@ class Admin extends React.Component<{}, AdminState> {
             return {
               path: _path,
               label: _text,
-              form: item.form
+              form: {
+                ...item.form,
+                ...categories
+              }
             }
           }),
         };
@@ -708,6 +730,8 @@ const DrawingsTable: React.FunctionComponent<{
           <th>F</th>
           <th>P</th>
           <th>T</th>
+          <th>Cat1</th>
+          <th>Cat2</th>
         </tr>
       </thead>
       <tbody>
@@ -741,6 +765,8 @@ const DrawingsTable: React.FunctionComponent<{
                 <td>{d.friendliness}</td>
                 <td>{d.pleasantness}</td>
                 <td>{d.trustworthiness}</td>
+                <td>{d.firstCategory}</td>
+                <td>{d.secondCategory || '-'}</td>
               </tr>
             ) : null
           })
@@ -779,6 +805,8 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
           <th>F</th>
           <th>P</th>
           <th>T</th>
+          <th>Cat 1</th>
+          <th>Cat 2</th>
         </tr>
       </thead>
       <tbody>
@@ -815,6 +843,8 @@ const ResultsTable: React.FunctionComponent<TableProps> = ({ data, focusPath, cl
                 <td>{form.friendliness}</td>
                 <td>{form.pleasantness}</td>
                 <td>{form.trustworthiness}</td>
+                <td>{form.firstCategory}</td>
+                <td>{form.secondCategory || '-'}</td>
               </tr>
             ))
           })
