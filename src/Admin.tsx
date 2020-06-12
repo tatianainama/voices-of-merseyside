@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, RefObject } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table, ListGroup, ListGroupItem } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Raster, Color } from 'paper';
-import { without, append, isNil, identity, includes, is } from 'ramda';
+import { without, append, isNil, identity, includes, is, descend, prop, sort, take } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import FileDownload from 'js-file-download';
 import map from './merseyside-nobg-white.png';
+import ReactWordcloud from 'react-wordcloud'
+
 import './Admin.css';
 
 const BACKEND = process.env.REACT_APP_BACKEND || '/backend';
@@ -65,6 +67,11 @@ type CanvasData = {
   label: paper.PointText
 };
 
+type WordCloud = {
+  text: string,
+  value: number
+};
+
 type AdminState = {
   original: StateData[],
   data: StateData[],
@@ -73,6 +80,7 @@ type AdminState = {
   focusedResponse?: StateData,
   path?: paper.Path,
   selectedArea?: paper.Item[],
+  wordCloud: WordCloud[],
   focusedDrawResponse?: {
     shape: paper.Item,
     label: paper.TextItem
@@ -123,13 +131,17 @@ const mkPath = (pathData: string, i: number, scale: number, data: ShapeData): pa
 
 class Admin extends React.Component<{}, AdminState> {
 
+  wordCloudRef: RefObject<unknown>;
+
   constructor(props: any) {
     super(props);
+    this.wordCloudRef = React.createRef();
     this.state = {
       height: 100,
       canvas: undefined,
       original: [],
       data: [],
+      wordCloud: [],
       focusedResponse: undefined,
       path: undefined,
       selectedArea: undefined,
@@ -172,9 +184,43 @@ class Admin extends React.Component<{}, AdminState> {
         item.visible = true;
       });
       this.setState({
-        selectedArea: items || []
+        selectedArea: items || [],
+        wordCloud: this.mkWords(items)
       })
     }
+  }
+
+  mkWords = (items: paper.Item[]) => {
+    const wordCounter = items.reduce<{[key: string]: number}>((words, item) => {
+      if (item.data && item.data.associations) {
+        item.data.associations.forEach((assoc: string) => {
+          if (assoc.trim && assoc !== '') {
+            const word = assoc.trim().toLowerCase();
+            words[word] = words[word] ? words[word] + 1 : 1;
+          }
+        })
+      }
+      return words;
+    }, {});
+    const keys = Object.keys(wordCounter);
+    const wordCloud = keys.map(word => {
+      return {
+        text: word,
+        value: wordCounter[word]
+      }
+    });
+    return take(10, sort(descend(prop('value')), wordCloud));
+  }
+
+  mkWordCloud = (words: {[key:string]: number}) => {
+    const keys = Object.keys(words);
+    const wordCloud = keys.map(word => {
+      return {
+        text: word,
+        value: words[word]
+      }
+    });
+    return take(10, sort(descend(prop('value')), wordCloud));
   }
 
   toggleDrawings = (data: StateData[], visibility: boolean) => {
@@ -328,12 +374,14 @@ class Admin extends React.Component<{}, AdminState> {
     this.setState({
       path: undefined,
       selectedArea: undefined,
-      focusedDrawResponse: undefined
+      focusedDrawResponse: undefined,
+      wordCloud: [],
     })
   }
 
   hideDrawing = (item: paper.Item) => {
     const { selectedArea } = this.state;
+
     if (selectedArea) {
       const newSelection = selectedArea.filter(i => {
         if (item.id === i.id) {
@@ -344,7 +392,8 @@ class Admin extends React.Component<{}, AdminState> {
         }
       });
       this.setState({
-        selectedArea: newSelection
+        selectedArea: newSelection,
+        wordCloud: this.mkWords(newSelection)
       })
     }
   }
@@ -449,8 +498,22 @@ class Admin extends React.Component<{}, AdminState> {
             {
               this.state.selectedArea ? (
                 <>
-                  <div>
-                    
+                  <div className="vom-word-cloud">
+                    <ReactWordcloud 
+                      options={{
+                        colors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'],
+                        enableTooltip: true,
+                        deterministic: false,
+                        fontFamily: 'impact',
+                        fontSizes: [12, 40],
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                        padding: 1,
+                        rotations: 1,
+                        rotationAngles: [0, 90],
+                      }}
+                      words={this.state.wordCloud}
+                    />
                   </div>
                   <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
                 </>
@@ -464,6 +527,7 @@ class Admin extends React.Component<{}, AdminState> {
                   <h4>Showing:</h4>
                   <ViewResponse response={this.state.focusedResponse}/>
                 </div>
+
               </div>
             ) : null
           }
@@ -978,5 +1042,6 @@ const ViewResponse: React.FunctionComponent<{response: StateData}> = ({ response
     </div>
   )
 }
+
 
 export default Admin;
