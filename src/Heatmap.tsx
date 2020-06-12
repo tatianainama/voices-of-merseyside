@@ -43,27 +43,38 @@ enum HeatmapType {
 }
 
 enum CategoryType {
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-  G,
-  H,
+  other,
+  geoScouse,
+  classScouse,
+  refScouse,
+  degreeScouse,
+  refName,
+  geoLoc,
+  class,
   I
 }
 
 const CategoryTypeList: CategoryType[] = [
-  CategoryType.A,
-  CategoryType.B,
-  CategoryType.C,
-  CategoryType.D,
-  CategoryType.E,
-  CategoryType.F,
-  CategoryType.G,
-  CategoryType.H,
+  CategoryType.other,
+  CategoryType.geoScouse,
+  CategoryType.classScouse,
+  CategoryType.refScouse,
+  CategoryType.degreeScouse,
+  CategoryType.refName,
+  CategoryType.geoLoc,
+  CategoryType.class,
   CategoryType.I
+];
+
+const CategoryTypeLabels = [
+  'other',
+  'geographical - scouse',
+  'class - scouse',
+  'reference name/authenticity of - scouse',
+  'degree of - scouse',
+  'reference name',
+  'geographical location',
+  'class',
 ];
 
 type PersonalInformation = {
@@ -116,14 +127,14 @@ type HeatmapProps = {
 }
 
 type CategoryAmount = {
-  [CategoryType.A]: number,
-  [CategoryType.B]: number,
-  [CategoryType.C]: number,
-  [CategoryType.D]: number,
-  [CategoryType.E]: number,
-  [CategoryType.F]: number,
-  [CategoryType.G]: number,
-  [CategoryType.H]: number,
+  [CategoryType.other]: number,
+  [CategoryType.geoScouse]: number,
+  [CategoryType.classScouse]: number,
+  [CategoryType.refScouse]: number,
+  [CategoryType.degreeScouse]: number,
+  [CategoryType.refName]: number,
+  [CategoryType.geoLoc]: number,
+  [CategoryType.class]: number,
   [CategoryType.I]: number
 }
 
@@ -427,15 +438,15 @@ class Heatmap extends Component<HeatmapProps, HeatmapState> {
           <h5>Heatmap based on categorization</h5> 
           <div>
             {
-              CategoryTypeList.map(category => (
+              CategoryTypeLabels.map((category, i) => (
                 <CustomInput
-                  key={category}
+                  key={i}
                   type="radio"
                   id={`heatmap-by-${category}`}
                   name={`by-${category}`}
                   label={`${category}`}
-                  value={category}
-                  checked={this.state.heatmapType === category}
+                  value={i}
+                  checked={this.state.heatmapType === i}
                   onChange={this.handleChangeColorByCat}
                 />
               ))
