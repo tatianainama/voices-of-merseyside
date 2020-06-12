@@ -1,4 +1,4 @@
-headers = ['id', 'shape id', 'age', 'gender', 'education', 'birth place', 'current place', 'non native', 'area name', 'sound example', 'associations', 'correctness', 'friendliness', 'pleasantness', 'trustworthiness']
+headers = ['id', 'shape id', 'age', 'gender', 'education', 'birth place', 'current place', 'non native', 'area name', 'sound example', 'associations', 'correctness', 'friendliness', 'pleasantness', 'trustworthiness', 'firstCategory', 'secondCategory']
 EDUCATION = {
         '1': 'High school or lower',
         '2': 'Bachelors',
@@ -39,6 +39,8 @@ def map_entry_to_rows(entry, _id):
                 form['correctness'],
                 form['friendliness'],
                 form['pleasantness'],
-                form['trustworthiness']
+                form['trustworthiness'],
+                subentry.get('firstCategory', ''),
+                subentry.get('secondCategory', ''),
                 ]
         yield [_id, i] + ret
