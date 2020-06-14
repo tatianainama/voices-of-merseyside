@@ -199,7 +199,6 @@ class Admin extends React.Component<{}, AdminState> {
       });
       this.setState({
         selectedArea: items || [],
-        wordCloud: this.mkWords(items)
       })
     }
   }
@@ -517,8 +516,23 @@ class Admin extends React.Component<{}, AdminState> {
                 {
                   this.state.selectedArea ? (
                     <>
-                      <p>drawings in area: 
-                        <Badge color="info">{this.state.selectedArea.length}</Badge> <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge> <Badge color="success" href="#" onClick={() => this.downloadResultsData() }>download results</Badge>
+                      <p className="vom-results-table-actions">drawings in area: 
+                        <Badge color="info">{this.state.selectedArea.length}</Badge>
+                        <Badge color="warning" href="#" onClick={() => this.clearDrawing() }>clear drawing</Badge>
+                        <Badge color="success" href="#" onClick={() => this.downloadResultsData() }>download results</Badge>
+                        <Badge color="primary" href="#" onClick={() => {
+                          if (this.state.wordCloud.length !== 0) {
+                            this.setState({
+                              wordCloud: []
+                            })
+                          } else {
+                            if(this.state.selectedArea) {
+                              this.setState({
+                                wordCloud: this.mkWords(this.state.selectedArea)
+                              })
+                            }
+                          }
+                        } }>toggle wordcloud</Badge>
                       </p>
                       <DrawingsTable
                         items={this.state.selectedArea}

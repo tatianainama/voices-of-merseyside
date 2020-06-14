@@ -38,6 +38,10 @@
   overflow-y: scroll;
 }
 
+.vom-results-table-actions .badge {
+  margin-left: 0.5rem;
+}
+
 #vom-results-filters h6 {
   color: #6c757d;
   font-weight: 700;
