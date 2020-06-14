@@ -10,7 +10,7 @@ import ReactWordcloud from 'react-wordcloud'
 
 import './Admin.css';
 
-const BACKEND = process.env.REACT_APP_BACKEND || '/backend';
+const BACKEND = process.env.REACT_APP_BACKEND || '/backend/';
 
 type PersonalInformation = {
   age: AgeVal,
