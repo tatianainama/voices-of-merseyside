@@ -1,7 +1,7 @@
 import React, { useState, RefObject } from 'react';
 import { Container, Badge, FormGroup, Label, Input, Button, Collapse, Table, ListGroup, ListGroupItem } from 'reactstrap';
 import Paper, { Path, PaperScope, Point, Raster, Color } from 'paper';
-import { without, append, isNil, identity, includes, is, descend, prop, sort, take } from 'ramda';
+import { without, append, isNil, identity, includes, is, descend, prop, sort, take, contains } from 'ramda';
 import Axios from 'axios';
 import VALUES, { AgeVal, GenderVal, NonNativeVal, Filters, FilterVal, FilterStatus, EducationVal } from './services';
 import FileDownload from 'js-file-download';
@@ -644,6 +644,7 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
       '4': 0
     }
   };
+  let ids: number[] = [];
   const [totals] = useState<SelectedAreaTotals>(items.reduce((totals, item) => {
     const data = item.data as ShapeData;
     const lvlEd = data.levelEducation ? data.levelEducation.reduce((tot, lvl) => {
@@ -652,20 +653,25 @@ const SelectedAreaTable: React.FunctionComponent<{items: paper.Item[]}> = ({ ite
         [lvl]: totals.levelEducation[lvl] + 1
       }
     }, {}) : {};
-    return data.age ? {
-      age: {
-        ...totals.age,
-        [data.age]: totals.age[data.age] + 1
-      },
-      gender: {
-        ...totals.gender,
-        [data.gender]: totals.gender[data.gender] + 1
-      },
-      levelEducation: {
-        ...totals.levelEducation,
-        ...lvlEd
+    if (contains(data.id, ids)) {
+      return totals;
+    } else {
+      ids.push(data.id);
+      return {
+        age: {
+          ...totals.age,
+          [data.age]: totals.age[data.age] + 1
+        },
+        gender: {
+          ...totals.gender,
+          [data.gender]: totals.gender[data.gender] + 1
+        },
+        levelEducation: {
+          ...totals.levelEducation,
+          ...lvlEd
+        }
       }
-    } : totals;
+    }
   }, { ...init }) || init)
 
   return (
