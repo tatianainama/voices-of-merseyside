@@ -555,7 +555,27 @@ class Admin extends React.Component<{}, AdminState> {
             {
               this.state.selectedArea ? (
                 <>
-                  <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
+                  { this.state.wordCloud.length ? (
+                    <Table bordered className="vom-wordcloud-repetition">
+                      <thead>
+                        <tr>
+                          <th>word</th>
+                          <th>repetition</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { this.state.wordCloud.map(({text, value}, i) => (
+                          <tr key={i}>
+                            <td>{text}</td>
+                            <td>{value}</td>
+                          </tr>
+                        )) }
+                      </tbody>
+                    </Table>
+                  ) : null }
+                  <div className="vom-selected-table">
+                    <SelectedAreaTable items={this.state.selectedArea}></SelectedAreaTable>
+                  </div>
                 </>
               ) : null
             }

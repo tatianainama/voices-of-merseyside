@@ -106,5 +106,15 @@
 }
 
 .vom-selected-data {
-  padding-left: 1rem;
+  margin-top: 1rem;
+  display: flex;
+}
+
+.vom-wordcloud-repetition {
+  width: 50%;
+  margin-right: 1rem;
+}
+
+.vom-selected-table {
+  width: 50%;
 }
