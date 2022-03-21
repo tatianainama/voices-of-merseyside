@@ -20,7 +20,7 @@ setup(name='backend',
             'Flask-SQLAlchemy==2.4.1',
             'psycopg2-binary==2.8.4',
             'SQLAlchemy==1.3.15',
-            'waitress==1.4.3',
+            'waitress==2.1.1',
             ],
         extras_require={
             'dev':
